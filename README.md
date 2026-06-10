@@ -201,7 +201,7 @@ This project demonstrates:
 
 **Riddhi Kumari**
 
-- LinkedIn: www.linkedin.com/in/riddhi-kumari-785188362
+- LinkedIn: https://www.linkedin.com/in/riddhi-kumari-039974383/
 - GitHub: https://github.com/RiddhiKumari127
 
 ---
