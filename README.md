@@ -189,6 +189,16 @@ This project demonstrates:
 
 ---
 
+## Setup
+
+Coming Soon 🚀
+
+Project setup instructions will be added during the implementation phase.
+
+Frontend: React.js
+Backend: Node.js + Express.js
+Database: MongoDB Atlas
+
 ## 🎓 Internship Project
 
 **Track:** Full Stack Development Internship  
