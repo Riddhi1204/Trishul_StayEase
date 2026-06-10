@@ -120,59 +120,6 @@ Store booking requests and room data securely using MongoDB.
 
 ---
 
-## 🔧 Installation
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/trishul-stayease.git
-```
-
-### Navigate to Project
-
-```bash
-cd trishul-stayease
-```
-
-### Install Frontend Dependencies
-
-```bash
-cd client
-npm install
-```
-
-### Install Backend Dependencies
-
-```bash
-cd ../server
-npm install
-```
-
-### Start Backend
-
-```bash
-npm run dev
-```
-
-### Start Frontend
-
-```bash
-cd ../client
-npm start
-```
-
----
-
-## 🌍 Environment Variables
-
-Create a `.env` file inside the server folder:
-
-```env
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-```
-
----
 
 ## 📈 Learning Outcomes
 
@@ -198,6 +145,9 @@ Project setup instructions will be added during the implementation phase.
 Frontend: React.js
 Backend: Node.js + Express.js
 Database: MongoDB Atlas
+
+---
+
 
 ## 🎓 Internship Project
 
