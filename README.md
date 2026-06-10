@@ -162,7 +162,7 @@ Database: MongoDB Atlas
 **Riddhi Kumari**
 
 - LinkedIn: https://www.linkedin.com/in/riddhi-kumari-039974383/
-- GitHub: https://github.com/RiddhiKumari127
+- GitHub: https://github.com/RiddhiKumari1204
 
 ---
 
