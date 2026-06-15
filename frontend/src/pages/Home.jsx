@@ -2,12 +2,13 @@ import Navbar from '../components/Navbar'
 import Hero   from '../components/Hero'
 import Card   from '../components/Card'
 import Footer from '../components/Footer'
+import mountainRetreatImg from '../assets/mountain_retreat.png'
 import './Home.css'
 
 const stays = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80',
+    image: mountainRetreatImg,
     tag: '🏔️ Mountain',
     title: 'Mountain Retreat',
     location: 'Munsiyari, Uttarakhand',
