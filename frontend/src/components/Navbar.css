@@ -111,6 +111,45 @@
   padding: 0.55rem 1.25rem;
 }
 
+/* Theme toggle button */
+.navbar__theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid #C8E6C9;
+  color: #1b5e20;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.navbar__theme-toggle:hover {
+  background: #E8F5E9;
+  border-color: #2E7D32;
+  transform: rotate(20deg) scale(1.05);
+}
+
+.navbar__theme-toggle--mobile {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+}
+
+.navbar__theme-toggle--mobile::after {
+  content: 'Toggle Dark / Light Mode';
+  display: inline;
+}
+
 /* Hamburger */
 .navbar__hamburger {
   display: none;

@@ -1,3 +1,8 @@
+/* ===== TAILWIND DIRECTIVES ===== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ===== CSS DESIGN TOKENS ===== */
 :root {
   --primary: #2E7D32;
@@ -222,4 +227,68 @@ button {
   .section {
     padding: 3rem 0;
   }
+}
+
+/* ===== DARK MODE OVERRIDES (existing pages) ===== */
+.dark {
+  --bg:          #0f172a;
+  --bg-card:     #1e293b;
+  --text:        #f1f5f9;
+  --text-muted:  #94a3b8;
+  --text-light:  #64748b;
+  --border:      #334155;
+  --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg:   0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dark body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.dark .navbar {
+  background: rgba(15, 23, 42, 0.97) !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .navbar--scrolled {
+  background: rgba(15, 23, 42, 1) !important;
+}
+
+.dark .navbar__logo-text,
+.dark .navbar__link {
+  color: #e2e8f0 !important;
+}
+
+.dark .navbar__link:hover,
+.dark .navbar__link--active {
+  color: #86efac !important;
+}
+
+.dark .navbar__link:hover,
+.dark .navbar__link--active {
+  background: rgba(134, 239, 172, 0.1) !important;
+}
+
+.dark .navbar__hamburger span {
+  background: #e2e8f0 !important;
+}
+
+.dark .navbar__mobile {
+  background: rgba(15, 23, 42, 0.98) !important;
+}
+
+.dark .card {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+.dark .features-strip {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .footer {
+  background: linear-gradient(180deg, #0a1628 0%, #050e1a 100%);
 }
