@@ -38,12 +38,14 @@ export function Spinner({ size = 'md', className = '', label = 'Loading…' }: S
       role="status"
       aria-label={label}
       className={[
-        'inline-block rounded-full animate-spin',
-        'border-primary-200 dark:border-primary-900',
-        'border-t-primary-600 dark:border-t-primary-400',
+        'inline-block rounded-full animate-spin border-solid',
         spinnerSize[size],
         className,
       ].join(' ')}
+      style={{
+        borderColor: '#C8E6C9',
+        borderTopColor: '#2E7D32',
+      }}
     />
   )
 }

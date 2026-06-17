@@ -22,17 +22,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary-600 hover:bg-primary-800 text-white shadow-md hover:shadow-lg ' +
-    'dark:bg-primary-600 dark:hover:bg-primary-700',
+    'bg-primary-600 hover:bg-primary-800 text-white shadow-md hover:shadow-lg',
   secondary:
-    'bg-slate-100 hover:bg-slate-200 text-slate-800 ' +
+    'bg-slate-200 hover:bg-slate-300 text-slate-800 ' +
     'dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-100',
   outline:
     'border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white ' +
-    'dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-600 dark:hover:text-white',
+    'dark:border-primary-400 dark:text-primary-300 dark:hover:bg-primary-700 dark:hover:text-white',
   danger:
-    'bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg ' +
-    'dark:bg-red-600 dark:hover:bg-red-700',
+    'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -45,8 +43,8 @@ const sizeClasses: Record<ButtonSize, string> = {
  * Reusable Button component.
  *
  * @example
- * <Button variant="primary" size="md" loading={false}>Save</Button>
- * <Button variant="danger" size="sm">Delete</Button>
+ * <Button variant="primary" size="md">Save</Button>
+ * <Button variant="danger" size="sm" loading>Deleting…</Button>
  */
 export function Button({
   variant = 'primary',
@@ -66,7 +64,7 @@ export function Button({
       disabled={isDisabled}
       className={[
         'inline-flex items-center justify-center font-semibold rounded-full',
-        'transition-all duration-200 ease-in-out',
+        'transition-all duration-200 ease-in-out select-none',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
         'active:scale-[0.97]',
         variantClasses[variant],

@@ -20,11 +20,15 @@ function ShowcaseSection({
   return (
     <section className="mb-16">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white font-playfair">{title}</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white"
+            style={{ fontFamily: "'Playfair Display', serif" }}>
+          {title}
+        </h2>
         {description && (
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">{description}</p>
         )}
-        <div className="h-0.5 bg-gradient-to-r from-primary-600 to-transparent mt-3 rounded-full" />
+        <div className="h-0.5 mt-3 rounded-full"
+             style={{ background: 'linear-gradient(to right, #2E7D32, transparent)' }} />
       </div>
       {children}
     </section>
@@ -42,11 +46,11 @@ function DemoCard({ label, children }: { label: string; children: React.ReactNod
 }
 
 export default function ComponentShowcase() {
-  const [modalOpen, setModalOpen]       = useState(false)
-  const [confirmOpen, setConfirmOpen]   = useState(false)
+  const [modalOpen,      setModalOpen]      = useState(false)
+  const [confirmOpen,    setConfirmOpen]    = useState(false)
   const [showPageLoader, setShowPageLoader] = useState(false)
-  const [inputValue, setInputValue]     = useState('')
-  const [loadingBtn, setLoadingBtn]     = useState(false)
+  const [inputValue,     setInputValue]     = useState('')
+  const [loadingBtn,     setLoadingBtn]     = useState(false)
   const { showToast } = useToast()
 
   const simulateLoading = () => {
@@ -60,17 +64,34 @@ export default function ComponentShowcase() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950"
+         style={{ transition: 'background-color 0.3s ease' }}>
       <Navbar />
 
-      <main className="pt-28 pb-20">
-        {/* Page header */}
-        <div className="bg-gradient-to-br from-primary-800 to-primary-600 py-16 mb-12">
+      <main className="pt-24 pb-20">
+
+        {/* ── Page hero ── */}
+        <div
+          className="py-16 mb-12"
+          style={{
+            background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)',
+          }}
+        >
           <div className="max-w-5xl mx-auto px-6 text-center">
-            <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4 border border-white/25">
+            <span
+              className="inline-block text-white text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4 border"
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                borderColor: 'rgba(255,255,255,0.3)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
               🧩 Week 3 Deliverable
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-white font-playfair mb-4">
+            <h1
+              className="text-4xl md:text-5xl font-bold text-white mb-4"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
               UI Component Library
             </h1>
             <p className="text-green-100 text-lg max-w-xl mx-auto leading-relaxed">
@@ -81,7 +102,11 @@ export default function ComponentShowcase() {
               {['TypeScript', 'Tailwind CSS', 'Dark Mode', 'Accessible', 'React 19'].map(tag => (
                 <span
                   key={tag}
-                  className="bg-white/10 border border-white/20 px-3 py-1 rounded-full"
+                  className="px-3 py-1 rounded-full"
+                  style={{
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                  }}
                 >
                   {tag}
                 </span>
@@ -90,12 +115,13 @@ export default function ComponentShowcase() {
           </div>
         </div>
 
+        {/* ── Content ── */}
         <div className="max-w-5xl mx-auto px-6">
 
           {/* ─── BUTTONS ─── */}
           <ShowcaseSection
             title="Button"
-            description="Four variants × three sizes, with loading and disabled states."
+            description="Four variants × three sizes — with loading and disabled states."
           >
             {/* Variants */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
@@ -145,7 +171,7 @@ export default function ComponentShowcase() {
           {/* ─── INPUTS ─── */}
           <ShowcaseSection
             title="Input"
-            description="Label, helper text, error state, and icon slot support."
+            description="Label, helper text, error state, and left/right icon slot support."
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <Input
@@ -158,7 +184,7 @@ export default function ComponentShowcase() {
               />
               <Input
                 label="Check-in Date"
-                placeholder="DD / MM / YYYY"
+                type="date"
                 leftIcon={<span>📅</span>}
               />
               <Input
@@ -208,7 +234,6 @@ export default function ComponentShowcase() {
               </Button>
             </div>
 
-            {/* Info modal */}
             <Modal
               isOpen={modalOpen}
               onClose={() => setModalOpen(false)}
@@ -217,7 +242,7 @@ export default function ComponentShowcase() {
               <div className="space-y-3">
                 <p>
                   Your stay at <strong>Mountain Retreat, Munsiyari</strong> is ready to confirm.
-                  Here's a quick summary:
+                  Summary:
                 </p>
                 <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                   <li>Check-in: 20 July 2025</li>
@@ -231,7 +256,6 @@ export default function ComponentShowcase() {
               </div>
             </Modal>
 
-            {/* Confirm modal */}
             <Modal
               isOpen={confirmOpen}
               onClose={() => setConfirmOpen(false)}
@@ -255,38 +279,30 @@ export default function ComponentShowcase() {
                 </>
               }
             >
-              <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+              <p>Are you sure you want to cancel? This action cannot be undone.</p>
             </Modal>
           </ShowcaseSection>
 
           {/* ─── TOAST ─── */}
           <ShowcaseSection
             title="Toast"
-            description="Four types with auto-dismiss after 3 seconds. Click to trigger."
+            description="Four types — auto-dismiss after 3 seconds. Click any button to trigger."
           >
             <div className="flex flex-wrap gap-3">
-              <Button
-                variant="primary"
-                onClick={() => showToast('Booking confirmed! 🎉', 'success')}
-              >
+              <Button variant="primary"
+                onClick={() => showToast('Booking confirmed! 🎉', 'success')}>
                 ✅ Success Toast
               </Button>
-              <Button
-                variant="danger"
-                onClick={() => showToast('Payment failed. Please retry.', 'error')}
-              >
+              <Button variant="danger"
+                onClick={() => showToast('Payment failed. Please retry.', 'error')}>
                 ❌ Error Toast
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => showToast('Only 2 rooms left for this date.', 'warning')}
-              >
+              <Button variant="secondary"
+                onClick={() => showToast('Only 2 rooms left for this date.', 'warning')}>
                 ⚠️ Warning Toast
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => showToast('New eco-stays added in Kerala!', 'info')}
-              >
+              <Button variant="outline"
+                onClick={() => showToast('New eco-stays added in Kerala!', 'info')}>
                 ℹ️ Info Toast
               </Button>
             </div>
@@ -297,7 +313,6 @@ export default function ComponentShowcase() {
             title="Loader"
             description="Spinner (inline) and PageLoader (fullscreen overlay). Four size variants."
           >
-            {/* Spinners */}
             <div className="mb-8">
               <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                 Spinner sizes
@@ -311,7 +326,6 @@ export default function ComponentShowcase() {
               </div>
             </div>
 
-            {/* Page Loader trigger */}
             <div>
               <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                 PageLoader (fullscreen)
@@ -325,7 +339,7 @@ export default function ComponentShowcase() {
         </div>
       </main>
 
-      {/* PageLoader overlay */}
+      {/* PageLoader is only mounted when showPageLoader is true — never permanently visible */}
       {showPageLoader && <PageLoader fullscreen message="Loading eco-stays…" />}
 
       <Footer />
