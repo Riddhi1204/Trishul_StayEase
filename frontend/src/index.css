@@ -1,7 +1,8 @@
-/* ===== TAILWIND DIRECTIVES ===== */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ===== TAILWIND v4 ===== */
+@import "tailwindcss";
+
+/* Dark mode via class on <html> */
+@variant dark (&:where(.dark, .dark *));
 
 /* ===== CSS DESIGN TOKENS ===== */
 :root {
