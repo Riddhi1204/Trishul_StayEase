@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useCallback } from 'react'
+import React, { ReactNode, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
 /** Props for the Modal component */

@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react'
+import React, { ButtonHTMLAttributes, ReactNode } from 'react'
 
 /** Supported visual styles for the Button */
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger'

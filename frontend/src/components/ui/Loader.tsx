@@ -1,3 +1,5 @@
+import React from 'react'
+
 /** Supported size keys for Loader */
 type LoaderSize = 'sm' | 'md' | 'lg' | 'xl'
 

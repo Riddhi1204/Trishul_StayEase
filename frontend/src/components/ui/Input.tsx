@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, ReactNode, useId } from 'react'
+import React, { InputHTMLAttributes, ReactNode, useId } from 'react'
 
 /** Supported visual variants for the Input */
 type InputVariant = 'default' | 'error'
