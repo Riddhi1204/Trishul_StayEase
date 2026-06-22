@@ -1,150 +1,206 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import Card   from '../components/Card'
-import Footer from '../components/Footer'
-import mountainRetreatImg from '../assets/mountain_retreat.png'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import Navbar  from '../components/Navbar'
+import Card    from '../components/Card'
+import Footer  from '../components/Footer'
+import {
+  fetchProperties,
+  searchProperties,
+  filterProperties,
+  deleteProperty,
+} from '../services/api'
 import './Dashboard.css'
 
-const allStays = [
-  {
-    id: 1,
-    image: mountainRetreatImg,
-    tag: '🏔️ Mountain',
-    title: 'Mountain Retreat',
-    location: 'Munsiyari, Uttarakhand',
-    description: 'Panoramic Himalayan views, organic meals, and guided treks at 2,800m altitude.',
-    price: '3,200',
-    rating: '4.9',
-    reviews: '128',
-    features: ['🌄 Mountain View', '🥗 Organic Meals', '🥾 Guided Treks'],
-    category: 'mountain',
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80',
-    tag: '🌲 Forest',
-    title: 'Forest Cabin',
-    location: 'Coorg, Karnataka',
-    description: 'Nestled in a 50-acre coffee estate with birdsong and freshly brewed estate coffee.',
-    price: '2,800',
-    rating: '4.8',
-    reviews: '95',
-    features: ['☕ Coffee Estate', '🦜 Bird Watching', '🌿 Nature Walks'],
-    category: 'forest',
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80',
-    tag: '🏞️ Riverside',
-    title: 'Riverside Homestay',
-    location: 'Rishikesh, Uttarakhand',
-    description: 'Sleep to the Ganga, yoga at sunrise, river rafting, and Garhwali home cooking.',
-    price: '2,500',
-    rating: '4.7',
-    reviews: '212',
-    features: ['🧘 Yoga Classes', '🚣 River Rafting', '🍛 Local Cuisine'],
-    category: 'riverside',
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
-    tag: '🏕️ Valley',
-    title: 'Valley Farmstay',
-    location: 'Spiti Valley, Himachal',
-    description: 'Solar-powered farmstay in cold desert valley, apple harvesting and monasteries.',
-    price: '4,000',
-    rating: '5.0',
-    reviews: '67',
-    features: ['☀️ Solar Powered', '🍎 Harvest Season', '🏛️ Monastery Visits'],
-    category: 'mountain',
-  },
-  {
-    id: 5,
-    image: 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?w=600&q=80',
-    tag: '🌊 Coastal',
-    title: 'Coastal Eco Villa',
-    location: 'Varkala, Kerala',
-    description: 'Cliff-top villa with Ayurvedic treatments, Kerala cooking classes, and dolphin watching.',
-    price: '3,600',
-    rating: '4.8',
-    reviews: '183',
-    features: ['🌊 Sea View', '💆 Ayurveda Spa', '🐬 Dolphin Watching'],
-    category: 'coastal',
-  },
-  {
-    id: 6,
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&q=80',
-    tag: '🎋 Bamboo',
-    title: 'Bamboo Forest Retreat',
-    location: 'Sikkim, Northeast India',
-    description: 'Handcrafted bamboo cottages in a UNESCO biosphere with cardamom farms.',
-    price: '2,200',
-    rating: '4.9',
-    reviews: '54',
-    features: ['🎋 Bamboo Cottages', '🌸 Rhododendrons', '🌱 Organic Farming'],
-    category: 'forest',
-  },
-  {
-    id: 7,
-    image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80',
-    tag: '🏔️ Mountain',
-    title: 'Himalayan Bungalow',
-    location: 'Manali, Himachal Pradesh',
-    description: 'Cosy apple orchard bungalow with valley views, bonfire nights, and local trout fishing.',
-    price: '3,800',
-    rating: '4.7',
-    reviews: '89',
-    features: ['🍏 Apple Orchard', '🔥 Bonfire Nights', '🎣 Trout Fishing'],
-    category: 'mountain',
-  },
-  {
-    id: 8,
-    image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80',
-    tag: '🌊 Coastal',
-    title: 'Backwater Houseboat',
-    location: 'Alleppey, Kerala',
-    description: 'Traditional kettuvallam houseboat gliding through emerald backwaters.',
-    price: '5,500',
-    rating: '4.9',
-    reviews: '140',
-    features: ['🚤 Houseboat Stay', '🦢 Backwaters', '🦞 Seafood Meals'],
-    category: 'coastal',
-  },
-  {
-    id: 9,
-    image: 'https://images.unsplash.com/photo-1496080174650-637e3f22fa03?w=600&q=80',
-    tag: '🌲 Forest',
-    title: 'Jungle Treehouse',
-    location: 'Wayanad, Kerala',
-    description: 'Stay in the treetops of the Western Ghats with wildlife safaris and tribal culture.',
-    price: '4,200',
-    rating: '4.8',
-    reviews: '76',
-    features: ['🌳 Treehouse', '🐘 Wildlife Safari', '🏹 Tribal Culture'],
-    category: 'forest',
-  },
-]
+// ── Skeleton card ─────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="card" style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>
+      <div style={{ height: 220, background: 'var(--border)', borderRadius: '12px 12px 0 0' }} />
+      <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '40%' }} />
+        <div style={{ height: 20, background: 'var(--border)', borderRadius: 6, width: '75%' }} />
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '55%' }} />
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '90%' }} />
+        <div style={{ height: 40, background: 'var(--border)', borderRadius: 8, marginTop: '0.5rem' }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Toast notification ────────────────────────────────────────────────────────
+function Toast({ message, type = 'success', onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3500)
+    return () => clearTimeout(t)
+  }, [onClose])
+
+  const colours = {
+    success: { bg: '#f0fdf4', border: '#bbf7d0', text: '#166534', icon: '✅' },
+    error:   { bg: '#fff5f5', border: '#fed7d7', text: '#c53030', icon: '❌' },
+    info:    { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', icon: 'ℹ️' },
+  }
+  const c = colours[type] || colours.info
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+      background: c.bg, border: `1px solid ${c.border}`, color: c.text,
+      borderRadius: 12, padding: '0.85rem 1.25rem',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+      display: 'flex', alignItems: 'center', gap: '0.6rem',
+      fontSize: '0.9rem', fontWeight: 500, maxWidth: 340,
+      animation: 'slideInRight 0.3s ease',
+    }}>
+      <span>{c.icon}</span>
+      <span style={{ flex: 1 }}>{message}</span>
+      <button onClick={onClose} style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: c.text, opacity: 0.6, fontSize: '1.1rem', lineHeight: 1,
+      }}>✕</button>
+    </div>
+  )
+}
+
+// ── Inline spinner ────────────────────────────────────────────────────────────
+function Spinner({ size = 20 }) {
+  return (
+    <span style={{
+      display: 'inline-block', width: size, height: size,
+      border: '3px solid #C8E6C9', borderTopColor: '#2E7D32',
+      borderRadius: '50%', animation: 'spin 0.7s linear infinite',
+    }} />
+  )
+}
 
 const categories = ['all', 'mountain', 'forest', 'riverside', 'coastal']
 
 export default function Dashboard() {
+  const [allStays,       setAllStays]       = useState([])
+  const [displayStays,   setDisplayStays]   = useState([])
+  const [loading,        setLoading]        = useState(true)
+  const [searching,      setSearching]      = useState(false)
+  const [error,          setError]          = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery,    setSearchQuery]    = useState('')
   const [sortBy,         setSortBy]         = useState('featured')
+  const [maxPrice,       setMaxPrice]       = useState('')
+  const [toast,          setToast]          = useState(null)
 
-  const filtered = allStays
-    .filter(s =>
-      (activeCategory === 'all' || s.category === activeCategory) &&
-      (s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       s.location.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .sort((a, b) => {
-      if (sortBy === 'price-low')  return parseInt(a.price.replace(',','')) - parseInt(b.price.replace(',',''))
-      if (sortBy === 'price-high') return parseInt(b.price.replace(',','')) - parseInt(a.price.replace(',',''))
+  const debounceRef = useRef(null)
+
+  // ── Show toast ──────────────────────────────────────────────────
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type })
+  }, [])
+
+  // ── Load all properties ─────────────────────────────────────────
+  const loadAll = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    setSearchQuery('')
+    setActiveCategory('all')
+    try {
+      const data = await fetchProperties()
+      setAllStays(data)
+      setDisplayStays(data)
+    } catch (err) {
+      setError(err.message)
+      showToast(err.message, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [showToast])
+
+  useEffect(() => { loadAll() }, [loadAll])
+
+  // ── Client-side category filter + sort (instant, no API call) ──
+  useEffect(() => {
+    if (searchQuery.trim()) return  // search handles display separately
+
+    let results = [...allStays]
+
+    if (activeCategory !== 'all') {
+      results = results.filter(s => s.category === activeCategory)
+    }
+
+    results = results.sort((a, b) => {
+      if (sortBy === 'price-low')  return a._rawPrice - b._rawPrice
+      if (sortBy === 'price-high') return b._rawPrice - a._rawPrice
       if (sortBy === 'rating')     return parseFloat(b.rating) - parseFloat(a.rating)
       return 0
     })
+
+    setDisplayStays(results)
+  }, [activeCategory, sortBy, allStays, searchQuery])
+
+  // ── Debounced search via API ────────────────────────────────────
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (!searchQuery.trim()) {
+      // Revert to full list when search cleared
+      setDisplayStays(allStays)
+      return
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const results = await searchProperties(searchQuery.trim())
+        setDisplayStays(results)
+      } catch (err) {
+        showToast(err.message, 'error')
+      } finally {
+        setSearching(false)
+      }
+    }, 400)
+
+    return () => clearTimeout(debounceRef.current)
+  }, [searchQuery, allStays, showToast])
+
+  // ── Price filter via API ────────────────────────────────────────
+  const applyPriceFilter = async () => {
+    if (!maxPrice || isNaN(Number(maxPrice))) {
+      showToast('Enter a valid price to filter.', 'info')
+      return
+    }
+    setSearching(true)
+    try {
+      const results = await filterProperties({
+        max_price: Number(maxPrice),
+        ...(activeCategory !== 'all' ? { type: activeCategory } : {}),
+      })
+      setDisplayStays(results)
+      showToast(`Showing ${results.length} stays under ₹${Number(maxPrice).toLocaleString('en-IN')}`, 'info')
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const clearFilters = () => {
+    setSearchQuery('')
+    setActiveCategory('all')
+    setSortBy('featured')
+    setMaxPrice('')
+    setDisplayStays(allStays)
+  }
+
+  // ── Delete a property ───────────────────────────────────────────
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this property?')) return
+    try {
+      await deleteProperty(id)
+      const updated = allStays.filter(s => s.id !== id)
+      setAllStays(updated)
+      setDisplayStays(prev => prev.filter(s => s.id !== id))
+      showToast('Property deleted successfully.', 'success')
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  }
+
+  const isFiltered = searchQuery || activeCategory !== 'all' || maxPrice
 
   return (
     <div className="page-wrapper">
@@ -157,13 +213,29 @@ export default function Dashboard() {
             <div>
               <span className="badge">Explore Stays</span>
               <h1 className="dashboard-hero__title">Find Your Perfect Eco-Stay</h1>
-              <p className="dashboard-hero__sub">Browse all our verified sustainable homestays across India.</p>
+              <p className="dashboard-hero__sub">
+                Browse all our verified sustainable homestays across India.
+              </p>
+              {/* API status badge */}
+              {!loading && !error && (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  fontSize: '0.78rem', color: '#fff', opacity: 0.85,
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: 20, padding: '0.3rem 0.9rem', marginTop: '0.75rem',
+                }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
+                  {allStays.length} properties loaded from API
+                </div>
+              )}
             </div>
 
             {/* Search + sort */}
             <div className="dashboard-controls">
               <div className="dashboard-search">
-                <span>🔍</span>
+                <span>{searching ? <Spinner size={16} /> : '🔍'}</span>
                 <input
                   id="dashboard-search"
                   type="text"
@@ -172,6 +244,13 @@ export default function Dashboard() {
                   onChange={e => setSearchQuery(e.target.value)}
                   className="dashboard-search__input"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5 }}
+                    aria-label="Clear search"
+                  >✕</button>
+                )}
               </div>
               <select
                 id="dashboard-sort"
@@ -196,6 +275,7 @@ export default function Dashboard() {
         {/* Filters + Grid */}
         <section className="section">
           <div className="container">
+
             {/* Category filters */}
             <div className="category-filters" role="tablist" aria-label="Category filters">
               {categories.map(cat => (
@@ -205,52 +285,136 @@ export default function Dashboard() {
                   role="tab"
                   aria-selected={activeCategory === cat}
                   className={`filter-btn${activeCategory === cat ? ' filter-btn--active' : ''}`}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => { setActiveCategory(cat); setSearchQuery('') }}
                 >
-                  {cat === 'all'      && '🌍 All Stays'}
-                  {cat === 'mountain' && '🏔️ Mountain'}
-                  {cat === 'forest'   && '🌲 Forest'}
-                  {cat === 'riverside'&& '🏞️ Riverside'}
-                  {cat === 'coastal'  && '🌊 Coastal'}
+                  {cat === 'all'       && '🌍 All Stays'}
+                  {cat === 'mountain'  && '🏔️ Mountain'}
+                  {cat === 'forest'    && '🌲 Forest'}
+                  {cat === 'riverside' && '🏞️ Riverside'}
+                  {cat === 'coastal'   && '🌊 Coastal'}
                 </button>
               ))}
             </div>
 
+            {/* Price filter row */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              marginBottom: '1.25rem', flexWrap: 'wrap',
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 10, padding: '0.5rem 0.9rem',
+              }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Max ₹</span>
+                <input
+                  id="price-filter"
+                  type="number"
+                  placeholder="e.g. 3000"
+                  value={maxPrice}
+                  onChange={e => setMaxPrice(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && applyPriceFilter()}
+                  style={{
+                    border: 'none', outline: 'none', background: 'transparent',
+                    width: 90, fontSize: '0.9rem', color: 'var(--text)',
+                  }}
+                />
+              </div>
+              <button
+                className="btn btn-primary"
+                style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem' }}
+                onClick={applyPriceFilter}
+                disabled={searching}
+              >
+                {searching ? <Spinner size={14} /> : 'Apply'}
+              </button>
+              {isFiltered && (
+                <button
+                  className="btn"
+                  style={{
+                    padding: '0.5rem 1rem', fontSize: '0.85rem',
+                    background: 'var(--card-bg)', border: '1px solid var(--border)',
+                    color: 'var(--text-muted)', borderRadius: 8,
+                  }}
+                  onClick={clearFilters}
+                >
+                  ✕ Clear Filters
+                </button>
+              )}
+            </div>
+
             {/* Result count */}
             <p className="result-count">
-              Showing <strong>{filtered.length}</strong> stays
-              {activeCategory !== 'all' && ` in ${activeCategory}`}
-              {searchQuery && ` for "${searchQuery}"`}
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Spinner size={14} /> Loading stays from API…
+                </span>
+              ) : (
+                <>
+                  Showing <strong>{displayStays.length}</strong> stays
+                  {activeCategory !== 'all' && ` in ${activeCategory}`}
+                  {searchQuery && ` for "${searchQuery}"`}
+                  {maxPrice && ` under ₹${Number(maxPrice).toLocaleString('en-IN')}`}
+                </>
+              )}
             </p>
 
+            {/* API error full-page */}
+            {error && !loading && (
+              <div style={{
+                textAlign: 'center', padding: '3rem 2rem',
+                background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: 16,
+              }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+                <h3 style={{ color: '#c53030', marginBottom: '0.5rem' }}>Backend not reachable</h3>
+                <p style={{ color: '#744210', marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                  {error}. Make sure the FastAPI server is running at{' '}
+                  <code style={{ background: '#fed7d7', padding: '0 4px', borderRadius: 4 }}>
+                    http://localhost:8000
+                  </code>
+                </p>
+                <button className="btn btn-primary" onClick={loadAll}>Retry</button>
+              </div>
+            )}
+
             {/* Grid */}
-            {filtered.length > 0 ? (
-              <div className="grid-3">
-                {filtered.map(stay => (
-                  <Card key={stay.id} {...stay} />
-                ))}
-              </div>
-            ) : (
-              <div className="no-results">
-                <span>🌿</span>
-                <h3>No stays found</h3>
-                <p>Try adjusting your filters or search query.</p>
-                <button className="btn btn-primary" onClick={() => { setSearchQuery(''); setActiveCategory('all') }}>
-                  Clear Filters
-                </button>
-              </div>
+            {!error && (
+              <>
+                {loading ? (
+                  <div className="grid-3">
+                    {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+                  </div>
+                ) : displayStays.length > 0 ? (
+                  <div className="grid-3">
+                    {displayStays.map(stay => (
+                      <div key={stay.id} style={{ position: 'relative' }}>
+                        <Card {...stay} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-results">
+                    <span>🌿</span>
+                    <h3>No stays found</h3>
+                    <p>Try adjusting your filters or search query.</p>
+                    <button className="btn btn-primary" onClick={clearFilters}>
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
 
-        {/* Booking stats banner */}
+        {/* Stats banner */}
         <section className="dashboard-stats-banner">
           <div className="container dashboard-stats-inner">
             {[
-              { icon: '🏡', value: '200+',  label: 'Verified Eco-Stays' },
-              { icon: '📍', value: '50+',   label: 'Destinations Covered' },
-              { icon: '✅', value: '100%',  label: 'Eco Certified' },
-              { icon: '⚡', value: 'Instant',label: 'Booking Confirmation' },
+              { icon: '🏡', value: '200+',    label: 'Verified Eco-Stays'      },
+              { icon: '📍', value: '50+',     label: 'Destinations Covered'    },
+              { icon: '✅', value: '100%',    label: 'Eco Certified'           },
+              { icon: '⚡', value: 'Instant', label: 'Booking Confirmation'    },
             ].map(s => (
               <div className="dash-stat" key={s.label}>
                 <span className="dash-stat__icon">{s.icon}</span>
@@ -263,6 +427,15 @@ export default function Dashboard() {
       </main>
 
       <Footer />
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

@@ -1,90 +1,13 @@
+import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import Hero   from '../components/Hero'
 import Card   from '../components/Card'
 import Footer from '../components/Footer'
-import mountainRetreatImg from '../assets/mountain_retreat.png'
+import { fetchProperties } from '../services/api'
 import './Home.css'
 
-const stays = [
-  {
-    id: 1,
-    image: mountainRetreatImg,
-    tag: '🏔️ Mountain',
-    title: 'Mountain Retreat',
-    location: 'Munsiyari, Uttarakhand',
-    description:
-      'Wake up to panoramic Himalayan views. This eco-homestay offers organic meals, guided treks, and star-gazing nights at 2,800m altitude.',
-    price: '3,200',
-    rating: '4.9',
-    reviews: '128',
-    features: ['🌄 Mountain View', '🥗 Organic Meals', '🥾 Guided Treks'],
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80',
-    tag: '🌲 Forest',
-    title: 'Forest Cabin',
-    location: 'Coorg, Karnataka',
-    description:
-      'Nestled inside a 50-acre coffee estate. Immerse yourself in dense forest, listen to birdsong, and sip freshly brewed estate coffee.',
-    price: '2,800',
-    rating: '4.8',
-    reviews: '95',
-    features: ['☕ Coffee Estate', '🦜 Bird Watching', '🌿 Nature Walks'],
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80',
-    tag: '🏞️ Riverside',
-    title: 'Riverside Homestay',
-    location: 'Rishikesh, Uttarakhand',
-    description:
-      'Sleep to the sound of the Ganga. Yoga sessions at sunrise, river rafting adventures, and traditional Garhwali home-cooked cuisine.',
-    price: '2,500',
-    rating: '4.7',
-    reviews: '212',
-    features: ['🧘 Yoga Classes', '🚣 River Rafting', '🍛 Local Cuisine'],
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
-    tag: '🏕️ Valley',
-    title: 'Valley Farmstay',
-    location: 'Spiti Valley, Himachal',
-    description:
-      'A solar-powered farmstay in the cold desert valley. Help with apple harvesting, visit ancient monasteries, and enjoy starlit skies.',
-    price: '4,000',
-    rating: '5.0',
-    reviews: '67',
-    features: ['☀️ Solar Powered', '🍎 Harvest Season', '🏛️ Monastery Visits'],
-  },
-  {
-    id: 5,
-    image: 'https://images.unsplash.com/photo-1518623489648-a173ef7824f3?w=600&q=80',
-    tag: '🌊 Coastal',
-    title: 'Coastal Eco Villa',
-    location: 'Varkala, Kerala',
-    description:
-      'A cliff-top eco villa overlooking the Arabian Sea. Experience Ayurvedic treatments, Kerala cooking classes, and dolphin watching.',
-    price: '3,600',
-    rating: '4.8',
-    reviews: '183',
-    features: ['🌊 Sea View', '💆 Ayurveda Spa', '🐬 Dolphin Watching'],
-  },
-  {
-    id: 6,
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&q=80',
-    tag: '🎋 Bamboo',
-    title: 'Bamboo Forest Retreat',
-    location: 'Sikkim, Northeast India',
-    description:
-      'Stay in handcrafted bamboo cottages in a UNESCO biosphere. Experience rich Sikkimese culture, cardamom farms, and rhododendron forests.',
-    price: '2,200',
-    rating: '4.9',
-    reviews: '54',
-    features: ['🎋 Bamboo Cottages', '🌸 Rhododendrons', '🌱 Organic Farming'],
-  },
-]
+// ── Static enrichment data for stays that come from the API ───────────────────
+// (The backend returns minimal fields; we add visuals here per-type)
 
 const testimonials = [
   {
@@ -110,7 +33,66 @@ const testimonials = [
   },
 ]
 
+// ── Skeleton loader card ───────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="card" style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>
+      <div style={{ height: 220, background: 'var(--border)', borderRadius: '12px 12px 0 0' }} />
+      <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '40%' }} />
+        <div style={{ height: 20, background: 'var(--border)', borderRadius: 6, width: '75%' }} />
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '55%' }} />
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '90%' }} />
+        <div style={{ height: 14, background: 'var(--border)', borderRadius: 6, width: '80%' }} />
+        <div style={{ height: 40, background: 'var(--border)', borderRadius: 8, marginTop: '0.5rem' }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Error state ───────────────────────────────────────────────────────────────
+function ErrorBanner({ message, onRetry }) {
+  return (
+    <div style={{
+      gridColumn: '1 / -1',
+      textAlign: 'center',
+      padding: '3rem 2rem',
+      background: '#fff5f5',
+      border: '1px solid #fed7d7',
+      borderRadius: 16,
+    }}>
+      <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+      <h3 style={{ color: '#c53030', marginBottom: '0.5rem' }}>Could not load stays</h3>
+      <p style={{ color: '#744210', marginBottom: '1.25rem', fontSize: '0.9rem' }}>{message}</p>
+      <button className="btn btn-primary" onClick={onRetry}>Try Again</button>
+    </div>
+  )
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function Home() {
+  const [stays,   setStays]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
+
+  const loadStays = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchProperties()
+      // Show only first 6 on the home page (featured)
+      setStays(data.slice(0, 6))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadStays()
+  }, [])
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -123,10 +105,10 @@ export default function Home() {
         <section className="features-strip">
           <div className="container features-strip__inner">
             {[
-              { icon: '🌿', title: 'Eco Certified',      desc: 'All stays meet sustainability standards' },
-              { icon: '🏡', title: 'Authentic Homes',     desc: 'Hosted by local families'                },
-              { icon: '💰', title: 'Best Price Guarantee',desc: 'No hidden fees, ever'                    },
-              { icon: '🛡️', title: 'Verified & Safe',     desc: 'Every stay is inspected'                },
+              { icon: '🌿', title: 'Eco Certified',       desc: 'All stays meet sustainability standards' },
+              { icon: '🏡', title: 'Authentic Homes',      desc: 'Hosted by local families'                },
+              { icon: '💰', title: 'Best Price Guarantee', desc: 'No hidden fees, ever'                    },
+              { icon: '🛡️', title: 'Verified & Safe',      desc: 'Every stay is inspected'                },
             ].map(f => (
               <div className="feature-item" key={f.title}>
                 <span className="feature-item__icon">{f.icon}</span>
@@ -139,7 +121,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stays Grid */}
+        {/* Stays Grid — API-driven */}
         <section className="section stays-section">
           <div className="container">
             <span className="badge">Featured Stays</span>
@@ -147,10 +129,33 @@ export default function Home() {
             <p className="section-subtitle">
               Every stay is verified for sustainability, authenticity, and unforgettable experiences.
             </p>
+
+            {/* API status indicator */}
+            {!loading && !error && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.78rem',
+                color: '#2E7D32',
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: 20,
+                padding: '0.3rem 0.8rem',
+                marginBottom: '1.5rem',
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+                Live data from backend API
+              </div>
+            )}
+
             <div className="grid-3">
-              {stays.map(stay => (
-                <Card key={stay.id} {...stay} />
-              ))}
+              {loading
+                ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+                : error
+                  ? <ErrorBanner message={error} onRetry={loadStays} />
+                  : stays.map(stay => <Card key={stay.id} {...stay} />)
+              }
             </div>
           </div>
         </section>

@@ -313,3 +313,18 @@ button {
 .dark .footer {
   background: linear-gradient(180deg, #0a1628 0%, #050e1a 100%);
 }
+
+/* ===== WEEK 4 — API loading animations ===== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
