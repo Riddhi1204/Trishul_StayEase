@@ -1,158 +1,165 @@
 # 🏡 Trishul StayEase – Direct Booking Engine
 
-A modern full-stack booking platform designed for eco-homestays to accept direct reservations without relying on third-party Online Travel Agencies (OTAs). The application helps homestay owners reduce commission costs while providing travelers with a seamless booking experience.
+A modern full-stack eco-homestay booking platform built with **React + Vite** (frontend) and **FastAPI** (backend). Helps eco-homestay owners accept direct reservations without relying on third-party OTAs.
 
-## 📌 Project Overview
-
-Trishul StayEase is developed as part of a Full Stack Development Internship project. The platform enables guests to explore homestay accommodations, check room availability, and submit booking inquiries directly to the property owner.
-
-The goal is to create a simple, responsive, and scalable booking solution that empowers eco-tourism businesses to manage reservations independently.
-
----
-
-## 🚀 Features
-
-### Guest Features
-- Browse homestay information and amenities
-- View available room categories
-- Check room availability
-- Submit booking inquiries
-- Contact homestay owners directly
-- Mobile-friendly responsive design
-
-### Admin Features
-- Manage room information
-- Update room availability
-- View booking inquiries
-- Manage reservation requests
-
-### Future Enhancements
-- AI-powered travel assistant
-- Online payment integration
-- User authentication
-- Email notifications
-- Booking dashboard and analytics
+🌐 **Live Demo:** [trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- React.js
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-
-### Backend
-- Node.js
-- Express.js
-
-### Database
-- MongoDB Atlas
-
-### Tools & Deployment
-- Git & GitHub
-- Postman
-- VS Code
-- Vercel (Frontend)
-- Render (Backend)
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite 8, React Router 7, Tailwind CSS v4, Axios |
+| **Backend** | Python, FastAPI, Pydantic v2, Uvicorn |
+| **Styling** | Vanilla CSS + Tailwind CSS (dark mode supported) |
+| **Deployment** | Vercel (Frontend) |
+| **Tools** | Git & GitHub, Postman, VS Code |
 
 ---
 
 ## 📂 Project Structure
 
-```bash
-Trishul-StayEase/
+```
+Trishul_StayEase/
 │
-├── client/
+├── frontend/                   # React + Vite app
 │   ├── src/
-│   ├── public/
+│   │   ├── components/         # Navbar, Hero, Card, Footer
+│   │   ├── components/ui/      # Button, Input, Modal, Toast, Loader
+│   │   ├── contexts/           # ThemeContext (dark mode)
+│   │   ├── pages/              # Home, About, Dashboard, Login, ComponentShowcase
+│   │   ├── services/
+│   │   │   └── api.js          # Axios API service layer
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── .env.local              # VITE_API_URL (git-ignored)
+│   ├── vercel.json             # SPA routing config
 │   └── package.json
 │
-├── server/
-│   ├── routes/
-│   ├── controllers/
-│   ├── models/
-│   ├── config/
-│   └── server.js
+├── backend/                    # FastAPI REST API
+│   ├── main.py                 # All endpoints + CORS + error handling
+│   ├── models.py               # Pydantic schemas
+│   ├── requirements.txt        # Python dependencies
+│   ├── .env                    # Local secrets (git-ignored)
+│   ├── .env.example            # Environment variable template
+│   └── README.md               # Backend-specific docs
 │
-├── README.md
-└── .gitignore
+├── W4_APICollection_TrishulStayEase.json  # Postman collection
+└── README.md
 ```
 
 ---
 
-## 🎯 Core Functionalities
+## 🚀 How to Run Locally
 
-### 1. Room Listing
-Display room details, pricing, capacity, and amenities.
-
-### 2. Availability Management
-Show available booking dates and room status.
-
-### 3. Booking Inquiry System
-Allow guests to submit reservation requests with:
-- Name
-- Email
-- Phone Number
-- Check-in Date
-- Check-out Date
-- Room Preference
-
-### 4. Contact Integration
-Direct inquiry through:
-- WhatsApp
-- Email
-
-### 5. Database Management
-Store booking requests and room data securely using MongoDB.
+### Prerequisites
+- **Node.js** v18+ and npm
+- **Python** 3.10+
 
 ---
 
-## 📸 Screens Planned
+### 1️⃣ Clone the repository
 
-- Home Page
-- About Us
-- Room Listings
-- Availability Calendar
-- Booking Form
-- Contact Page
+```bash
+git clone https://github.com/Riddhi1204/Trishul_StayEase.git
+cd Trishul_StayEase
+```
 
 ---
 
+### 2️⃣ Run the Backend (FastAPI)
 
-## 📈 Learning Outcomes
+```bash
+# Navigate to the backend folder
+cd backend
 
-This project demonstrates:
+# Create a Python virtual environment
+python -m venv venv
 
-- Full Stack Web Development
-- REST API Development
-- React Component Architecture
-- MongoDB Database Operations
-- Form Validation
-- Responsive UI Design
-- Git & GitHub Workflow
-- Deployment and Hosting
+# Activate the virtual environment
+# Windows:
+venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment variables
+cp .env.example .env
+
+# Start the server (with auto-reload)
+uvicorn main:app --reload --port 8000
+```
+
+✅ Backend running at: **http://localhost:8000**
+📖 Swagger API docs: **http://localhost:8000/docs**
 
 ---
 
-## Setup
+### 3️⃣ Run the Frontend (React + Vite)
 
-Coming Soon 🚀
+Open a **new terminal**, then:
 
-Project setup instructions will be added during the implementation phase.
+```bash
+# Navigate to the frontend folder
+cd frontend
 
-Frontend: React.js
-Backend: Node.js + Express.js
-Database: MongoDB Atlas
+# Install dependencies
+npm install
+
+# Create local environment file
+echo VITE_API_URL=http://localhost:8000 > .env.local
+
+# Start the dev server
+npm run dev
+```
+
+✅ Frontend running at: **http://localhost:5173**
 
 ---
 
+## 🔌 API Endpoints
+
+Base URL: `http://localhost:8000`
+
+| Method | Endpoint | Description | Status Code |
+|--------|----------|-------------|-------------|
+| GET | `/api/properties` | List all properties | 200 |
+| GET | `/api/properties/{id}` | Get a single property | 200 / 404 |
+| POST | `/api/properties` | Create a new property | 201 |
+| PUT | `/api/properties/{id}` | Update a property | 200 / 404 |
+| DELETE | `/api/properties/{id}` | Delete a property | 204 / 404 |
+| GET | `/api/properties/search?q=` | Search by title or location | 200 |
+| GET | `/api/properties/filter?max_price=` | Filter by price / type / status | 200 |
+
+---
+
+## 🌿 Features
+
+- **Eco-stay listings** fetched live from FastAPI backend
+- **Search** properties by name or location (debounced API calls)
+- **Filter** by price, type, and availability
+- **Dark mode** with system preference detection and localStorage persistence
+- **Reusable UI library** — Button, Input, Modal, Toast, Loader components
+- **Skeleton loading** states while fetching data
+- **Error handling** with retry support
+- **CORS configured** for local dev and Vercel production
+
+---
+
+## 📬 Postman Collection
+
+Import `W4_APICollection_TrishulStayEase.json` into Postman to test all endpoints with pre-filled example requests and responses.
+
+---
 
 ## 🎓 Internship Project
 
-**Track:** Full Stack Development Internship  
-**Sector:** Homestay & Eco-Tourism  
+**Track:** Full Stack Development Internship
+**Sector:** Homestay & Eco-Tourism
 **Project:** WD-05 – Direct Booking Engine (Zero Commission MVP)
 
 ---
@@ -161,8 +168,8 @@ Database: MongoDB Atlas
 
 **Riddhi Kumari**
 
-- LinkedIn: https://www.linkedin.com/in/riddhi-kumari-039974383/
-- GitHub: https://github.com/RiddhiKumari1204
+- 🔗 LinkedIn: [linkedin.com/in/riddhi-kumari-039974383](https://www.linkedin.com/in/riddhi-kumari-039974383/)
+- 🐙 GitHub: [github.com/Riddhi1204](https://github.com/Riddhi1204)
 
 ---
 
