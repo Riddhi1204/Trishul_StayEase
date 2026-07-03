@@ -3,3 +3,5 @@ uvicorn[standard]==0.30.6
 pydantic==2.8.2
 python-dotenv==1.0.1
 python-multipart==0.0.9
+motor==3.5.1
+pymongo==4.8.0

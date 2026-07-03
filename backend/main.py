@@ -1,12 +1,12 @@
 """
 Trishul StayEase — FastAPI Backend
-Week 4: REST API with in-memory storage
+Week 5: MongoDB Atlas persistent storage (Motor async driver)
 
-Endpoints
+Endpoints  (URLs and response shapes unchanged from Week 4)
 ---------
 GET    /api/properties              List all properties
-GET    /api/properties/search       Search properties by title or location
-GET    /api/properties/filter       Filter properties by max price
+GET    /api/properties/search       Search by title or location
+GET    /api/properties/filter       Filter by price / type / status
 GET    /api/properties/{id}         Get a single property
 POST   /api/properties              Create a new property  (201)
 PUT    /api/properties/{id}         Update a property      (200)
@@ -14,13 +14,21 @@ DELETE /api/properties/{id}         Delete a property      (204)
 """
 
 import os
+from contextlib import asynccontextmanager
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from database.connection import (
+    close_mongo_connection,
+    connect_to_mongo,
+    get_database,
+)
+from database import crud
 from models import ErrorResponse, PropertyCreate, PropertyResponse, PropertyUpdate
 
 # ── Load environment ──────────────────────────────────────────────
@@ -31,13 +39,37 @@ ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173,http://localhost:3000",
 ).split(",")
 
+
+# ── Lifespan (startup / shutdown) ─────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Connect to MongoDB, seed data, build indexes on startup; disconnect on shutdown."""
+    print("[startup] Connecting to MongoDB Atlas...")
+    await connect_to_mongo()
+    db = get_database()
+
+    await crud.ensure_indexes(db)
+    await crud.seed_if_empty(db)
+
+    # Store db on app.state so the dependency can reach it
+    app.state.db = db
+    print("[startup] MongoDB Atlas connected - Trishul StayEase API ready.")
+    yield
+    print("[shutdown] Closing MongoDB connection...")
+    await close_mongo_connection()
+
+
 # ── App ───────────────────────────────────────────────────────────
 app = FastAPI(
     title="Trishul StayEase API",
-    description="REST API for the Trishul StayEase eco-homestay booking platform.",
-    version="1.0.0",
+    description=(
+        "REST API for the Trishul StayEase eco-homestay booking platform.\n\n"
+        "**Week 5:** Backed by MongoDB Atlas via Motor (async driver)."
+    ),
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # ── CORS ──────────────────────────────────────────────────────────
@@ -49,62 +81,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── In-memory datastore ───────────────────────────────────────────
-_id_counter: int = 8   # next ID to assign
 
-properties: List[dict] = [
-    {"id": 1, "title": "Mountain Retreat",     "location": "Munsiyari, Uttarakhand",    "price": 3200, "type": "mountain",  "status": "available"},
-    {"id": 2, "title": "Forest Cabin",         "location": "Coorg, Karnataka",          "price": 2800, "type": "forest",    "status": "available"},
-    {"id": 3, "title": "Riverside Homestay",   "location": "Rishikesh, Uttarakhand",    "price": 2400, "type": "riverside", "status": "available"},
-    {"id": 4, "title": "Valley Farmstay",      "location": "Manali, Himachal Pradesh",  "price": 1900, "type": "mountain",  "status": "available"},
-    {"id": 5, "title": "Coastal Eco Lodge",    "location": "Varkala, Kerala",           "price": 3500, "type": "coastal",   "status": "available"},
-    {"id": 6, "title": "Himalayan Bungalow",   "location": "Kasol, Himachal Pradesh",   "price": 4200, "type": "mountain",  "status": "booked"},
-    {"id": 7, "title": "Bamboo Hut Resort",    "location": "Wayanad, Kerala",           "price": 2100, "type": "forest",    "status": "available"},
-]
-
-
-def _find(property_id: int) -> Optional[dict]:
-    """Return the property dict with the given id, or None."""
-    return next((p for p in properties if p["id"] == property_id), None)
-
-
-def _next_id() -> int:
-    global _id_counter
-    _id_counter += 1
-    return _id_counter
+# ── DB dependency ─────────────────────────────────────────────────
+def get_db(request: Request) -> AsyncIOMotorDatabase:
+    """FastAPI dependency — injects the Motor database handle into routes."""
+    return request.app.state.db
 
 
 # ── Root health-check ─────────────────────────────────────────────
 @app.get("/", tags=["Health"])
-def root():
+async def root():
     return {"status": "ok", "message": "Trishul StayEase API is running 🌿"}
 
 
 @app.get("/health", tags=["Health"])
-def health():
-    return {"status": "ok", "properties_in_memory": len(properties)}
+async def health(db: AsyncIOMotorDatabase = Depends(get_db)):
+    """Returns the total number of properties currently stored in MongoDB."""
+    from database.crud import PROPERTIES_COLLECTION
+    count = await db[PROPERTIES_COLLECTION].count_documents({})
+    return {"status": "ok", "storage": "mongodb", "property_count": count}
 
 
-# ── Search  (must be defined BEFORE /{id} to avoid routing clash) ─
+# ── Search  (defined BEFORE /{id} to prevent routing clash) ───────
 @app.get(
     "/api/properties/search",
     response_model=List[PropertyResponse],
     tags=["Properties"],
     summary="Search properties by title or location",
 )
-def search_properties(
-    q: str = Query(..., min_length=1, description="Search term matched against title and location"),
+async def search_properties(
+    q:  str = Query(..., min_length=1, description="Search term matched against title and location"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
 ):
     """
-    Returns all properties whose **title** or **location** contains the
-    search term (case-insensitive).
+    Case-insensitive substring search.
+    Returns all properties whose **title** or **location** contains `q`.
     """
-    q_lower = q.strip().lower()
-    results = [
-        p for p in properties
-        if q_lower in p["title"].lower() or q_lower in p["location"].lower()
-    ]
-    return results
+    return await crud.search_properties(db, q)
 
 
 # ── Filter ────────────────────────────────────────────────────────
@@ -112,22 +125,21 @@ def search_properties(
     "/api/properties/filter",
     response_model=List[PropertyResponse],
     tags=["Properties"],
-    summary="Filter properties by maximum price and/or type",
+    summary="Filter properties by price, type, and/or status",
 )
-def filter_properties(
-    max_price: Optional[int]  = Query(None, gt=0,      description="Maximum price per night (₹)"),
-    type:      Optional[str]  = Query(None, min_length=1, description="Property type (mountain, forest, etc.)"),
-    status:    Optional[str]  = Query(None, min_length=1, description="Status: available | booked"),
+async def filter_properties(
+    max_price: Optional[int] = Query(None, gt=0,       description="Maximum price per night (₹)"),
+    type:      Optional[str] = Query(None, min_length=1, description="Property type (mountain, forest, etc.)"),
+    status:    Optional[str] = Query(None, min_length=1, description="Status: available | booked"),
+    db:        AsyncIOMotorDatabase = Depends(get_db),
 ):
     """Filter properties with optional price ceiling, type, or status."""
-    results = properties
-    if max_price is not None:
-        results = [p for p in results if p["price"] <= max_price]
-    if type is not None:
-        results = [p for p in results if p["type"].lower() == type.lower()]
-    if status is not None:
-        results = [p for p in results if p["status"].lower() == status.lower()]
-    return results
+    return await crud.filter_properties(
+        db,
+        max_price=max_price,
+        property_type=type,
+        status=status,
+    )
 
 
 # ── List all ──────────────────────────────────────────────────────
@@ -137,9 +149,9 @@ def filter_properties(
     tags=["Properties"],
     summary="List all properties",
 )
-def list_properties():
-    """Return the full list of properties."""
-    return properties
+async def list_properties(db: AsyncIOMotorDatabase = Depends(get_db)):
+    """Return every property from MongoDB, sorted by id."""
+    return await crud.get_all_properties(db)
 
 
 # ── Get one ───────────────────────────────────────────────────────
@@ -150,9 +162,12 @@ def list_properties():
     tags=["Properties"],
     summary="Get a single property by ID",
 )
-def get_property(property_id: int):
+async def get_property(
+    property_id: int,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+):
     """Return a single property or **404** if not found."""
-    prop = _find(property_id)
+    prop = await crud.get_property_by_id(db, property_id)
     if not prop:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -170,20 +185,21 @@ def get_property(property_id: int):
     tags=["Properties"],
     summary="Create a new property",
 )
-def create_property(body: PropertyCreate):
+async def create_property(
+    body: PropertyCreate,
+    db:   AsyncIOMotorDatabase = Depends(get_db),
+):
     """
-    Create a new property listing.
-    Returns **201 Created** with the new property object (including assigned `id`).
+    Insert a new property into MongoDB.
+    Returns **201 Created** with the new document including its assigned `id`.
     """
-    new_prop = {
-        "id":       _next_id(),
+    new_prop = await crud.create_property(db, {
         "title":    body.title.strip(),
         "location": body.location.strip(),
         "price":    body.price,
         "type":     body.type.strip().lower(),
         "status":   body.status.strip().lower(),
-    }
-    properties.append(new_prop)
+    })
     return new_prop
 
 
@@ -198,19 +214,15 @@ def create_property(body: PropertyCreate):
     tags=["Properties"],
     summary="Update a property (partial update supported)",
 )
-def update_property(property_id: int, body: PropertyUpdate):
+async def update_property(
+    property_id: int,
+    body:        PropertyUpdate,
+    db:          AsyncIOMotorDatabase = Depends(get_db),
+):
     """
-    Update one or more fields of an existing property.
-    Only the fields present in the request body are updated.
-    Returns **404** if the property does not exist.
+    Partially update an existing property ($set on changed fields only).
+    Returns **404** if not found, **400** if the request body is empty.
     """
-    prop = _find(property_id)
-    if not prop:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Property with id={property_id} not found.",
-        )
-
     update_data = body.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(
@@ -218,8 +230,13 @@ def update_property(property_id: int, body: PropertyUpdate):
             detail="Request body must contain at least one field to update.",
         )
 
-    prop.update(update_data)
-    return prop
+    updated = await crud.update_property(db, property_id, update_data)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Property with id={property_id} not found.",
+        )
+    return updated
 
 
 # ── Delete ────────────────────────────────────────────────────────
@@ -230,18 +247,20 @@ def update_property(property_id: int, body: PropertyUpdate):
     tags=["Properties"],
     summary="Delete a property",
 )
-def delete_property(property_id: int):
+async def delete_property(
+    property_id: int,
+    db:          AsyncIOMotorDatabase = Depends(get_db),
+):
     """
-    Remove a property from the store.
+    Permanently remove a property from MongoDB.
     Returns **204 No Content** on success, **404** if not found.
     """
-    prop = _find(property_id)
-    if not prop:
+    deleted = await crud.delete_property(db, property_id)
+    if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Property with id={property_id} not found.",
         )
-    properties.remove(prop)
     return None   # 204 — no body
 
 

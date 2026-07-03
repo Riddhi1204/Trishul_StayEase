@@ -1,7 +1,7 @@
 # Trishul StayEase — FastAPI Backend
 
 REST API for the Trishul StayEase eco-homestay booking platform.  
-Built with **FastAPI + Pydantic v2 + Uvicorn** using in-memory storage (Week 4).
+Built with **FastAPI + Pydantic v2 + Uvicorn + Motor + MongoDB Atlas**.
 
 ---
 
@@ -9,12 +9,16 @@ Built with **FastAPI + Pydantic v2 + Uvicorn** using in-memory storage (Week 4).
 
 ```
 backend/
-├── main.py            # FastAPI app — all routes
-├── models.py          # Pydantic schemas
-├── requirements.txt   # Python dependencies
-├── .env               # Local secrets (git-ignored)
-├── .env.example       # Template — copy to .env
-└── README.md          # This file
+├── main.py                # FastAPI app — all routes (async)
+├── models.py              # Pydantic schemas
+├── database/
+│   ├── __init__.py
+│   ├── connection.py      # Motor client — connect / disconnect
+│   └── crud.py            # All async CRUD operations + seed data
+├── requirements.txt       # Python dependencies
+├── .env                   # Local secrets (git-ignored)
+├── .env.example           # Template — copy to .env
+└── README.md              # This file
 ```
 
 ---
@@ -41,20 +45,41 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Set up environment variables
+### 3. Set up MongoDB Atlas
+
+1. Go to [cloud.mongodb.com](https://cloud.mongodb.com) and sign in
+2. Create a free **M0 cluster** (if you don't have one)
+3. Under **Database Access** → create a user with **Read/Write** access
+4. Under **Network Access** → add your IP (or `0.0.0.0/0` for development)
+5. Click **Connect** → **Drivers** → copy the Python connection string
+
+### 4. Configure environment variables
 
 ```bash
 # Copy the example file
-cp .env.example .env
-
-# Edit .env with your values (allowed origins, port, etc.)
+cp .env.example .env   # (Windows: copy .env.example .env)
 ```
 
-### 4. Start the development server
+Edit `.env` and fill in your values:
+
+```env
+PORT=8000
+HOST=0.0.0.0
+ALLOWED_ORIGINS=http://localhost:5173,https://your-app.vercel.app
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
+DB_NAME=trishul_stayease
+```
+
+### 5. Start the development server
 
 ```bash
 uvicorn main:app --reload --port 8000
 ```
+
+On **first startup**, the server will automatically:
+- Connect to MongoDB Atlas
+- Create indexes on the `properties` collection
+- Seed 7 eco-stay properties (if the collection is empty)
 
 The API will be live at **http://localhost:8000**
 
@@ -97,6 +122,13 @@ Base URL: `http://localhost:8000`
 **Valid types:** `mountain` | `forest` | `riverside` | `coastal`  
 **Valid statuses:** `available` | `booked`
 
+### MongoDB Collections
+
+| Collection | Purpose |
+|---|---|
+| `properties` | All property documents |
+| `counters` | Auto-increment ID sequence (`property_id`) |
+
 ---
 
 ## 🔧 Example Requests
@@ -124,7 +156,7 @@ curl "http://localhost:8000/api/properties/filter?max_price=3000&type=forest"
 
 Set the `ALLOWED_ORIGINS` variable in `.env` to allow your frontend:
 
-```
+```env
 ALLOWED_ORIGINS=http://localhost:5173,https://your-app.vercel.app
 ```
 
@@ -137,3 +169,5 @@ ALLOWED_ORIGINS=http://localhost:5173,https://your-app.vercel.app
 | `PORT` | `8000` | Server port |
 | `HOST` | `0.0.0.0` | Server host |
 | `ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated CORS origins |
+| `MONGO_URI` | — | **Required** — MongoDB Atlas connection string |
+| `DB_NAME` | `trishul_stayease` | MongoDB database name |

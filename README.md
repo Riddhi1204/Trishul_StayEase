@@ -1,6 +1,6 @@
 # 🏡 Trishul StayEase – Direct Booking Engine
 
-A modern full-stack eco-homestay booking platform built with **React + Vite** (frontend) and **FastAPI** (backend). Helps eco-homestay owners accept direct reservations without relying on third-party OTAs.
+A modern full-stack eco-homestay booking platform built with **React + Vite** (frontend) and **FastAPI + MongoDB Atlas** (backend). Helps eco-homestay owners accept direct reservations without relying on third-party OTAs.
 
 🌐 **Live Demo:** [trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
 
@@ -12,6 +12,7 @@ A modern full-stack eco-homestay booking platform built with **React + Vite** (f
 |---|---|
 | **Frontend** | React 19, Vite 8, React Router 7, Tailwind CSS v4, Axios |
 | **Backend** | Python, FastAPI, Pydantic v2, Uvicorn |
+| **Database** | MongoDB Atlas, Motor (async driver), PyMongo |
 | **Styling** | Vanilla CSS + Tailwind CSS (dark mode supported) |
 | **Deployment** | Vercel (Frontend) |
 | **Tools** | Git & GitHub, Postman, VS Code |
@@ -23,32 +24,67 @@ A modern full-stack eco-homestay booking platform built with **React + Vite** (f
 ```
 Trishul_StayEase/
 │
-├── frontend/                   # React + Vite app
+├── frontend/                        # React + Vite app (deployed on Vercel)
 │   ├── src/
-│   │   ├── components/         # Navbar, Hero, Card, Footer
-│   │   ├── components/ui/      # Button, Input, Modal, Toast, Loader
-│   │   ├── contexts/           # ThemeContext (dark mode)
-│   │   ├── pages/              # Home, About, Dashboard, Login, ComponentShowcase
+│   │   ├── components/              # Navbar, Hero, Card, Footer
+│   │   ├── components/ui/           # Button, Input, Modal, Toast, Loader
+│   │   ├── contexts/                # ThemeContext (dark mode)
+│   │   ├── pages/                   # Home, About, Dashboard, Login, ComponentShowcase
 │   │   ├── services/
-│   │   │   └── api.js          # Axios API service layer
+│   │   │   └── api.js               # Axios API service layer
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   └── index.css
-│   ├── .env.local              # VITE_API_URL (git-ignored)
-│   ├── vercel.json             # SPA routing config
+│   ├── .env.local                   # VITE_API_URL (git-ignored)
+│   ├── vercel.json                  # SPA routing config
 │   └── package.json
 │
-├── backend/                    # FastAPI REST API
-│   ├── main.py                 # All endpoints + CORS + error handling
-│   ├── models.py               # Pydantic schemas
-│   ├── requirements.txt        # Python dependencies
-│   ├── .env                    # Local secrets (git-ignored)
-│   ├── .env.example            # Environment variable template
-│   └── README.md               # Backend-specific docs
+├── backend/                         # FastAPI REST API + MongoDB Atlas
+│   ├── main.py                      # All async routes, lifespan, CORS
+│   ├── models.py                    # Pydantic v2 schemas
+│   ├── database/
+│   │   ├── connection.py            # Motor client — connect/disconnect
+│   │   └── crud.py                  # All async CRUD operations + seed data
+│   ├── schema_diagram.png           # Week 5 MongoDB ER diagram
+│   ├── requirements.txt             # Python dependencies
+│   ├── .env                         # Local secrets (git-ignored)
+│   ├── .env.example                 # Environment variable template
+│   └── README.md                    # Backend-specific docs + MongoDB setup
 │
-├── W4_APICollection_TrishulStayEase.json  # Postman collection
-└── README.md
+├── W4_APICollection_26100462.json   # Postman collection (Week 4 deliverable)
+└── README.md                        # This file
 ```
+
+---
+
+## 🗄️ Database Schema (Week 5 — MongoDB Atlas)
+
+![MongoDB Schema Diagram](backend/schema_diagram.png)
+
+Two collections in the `trishul_stayease` database:
+
+```mermaid
+erDiagram
+    PROPERTIES {
+        ObjectId _id PK
+        int id UK
+        string title
+        string location
+        int price
+        string type
+        string status
+    }
+    COUNTERS {
+        string _id PK
+        int seq
+    }
+    COUNTERS ||--o{ PROPERTIES : "provides next id via $inc"
+```
+
+| Collection | Purpose |
+|---|---|
+| `properties` | All eco-stay listings (seeded with 7 on first run) |
+| `counters` | Atomic auto-increment sequence for integer `id` |
 
 ---
 
@@ -57,6 +93,7 @@ Trishul_StayEase/
 ### Prerequisites
 - **Node.js** v18+ and npm
 - **Python** 3.10+
+- **MongoDB Atlas** account (free M0 cluster)
 
 ---
 
@@ -69,55 +106,59 @@ cd Trishul_StayEase
 
 ---
 
-### 2️⃣ Run the Backend (FastAPI)
+### 2️⃣ Run the Backend (FastAPI + MongoDB)
 
 ```bash
 # Navigate to the backend folder
 cd backend
 
-# Create a Python virtual environment
+# Create and activate a virtual environment
 python -m venv venv
-
-# Activate the virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS / Linux:
-source venv/bin/activate
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy environment variables
-cp .env.example .env
+# Set up environment variables
+copy .env.example .env         # Windows
+# cp .env.example .env         # macOS / Linux
+```
 
-# Start the server (with auto-reload)
+Edit `.env` and fill in your MongoDB Atlas connection string:
+
+```env
+PORT=8000
+HOST=0.0.0.0
+ALLOWED_ORIGINS=http://localhost:5173,https://trishul-stay-ease.vercel.app
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
+DB_NAME=trishul_stayease
+```
+
+```bash
+# Start the server
 uvicorn main:app --reload --port 8000
 ```
 
-✅ Backend running at: **http://localhost:8000**
-📖 Swagger API docs: **http://localhost:8000/docs**
+> On first startup, the server automatically connects to Atlas, creates indexes, and seeds 7 eco-stay properties if the collection is empty.
+
+✅ Backend: **http://localhost:8000**
+📖 Swagger docs: **http://localhost:8000/docs**
 
 ---
 
 ### 3️⃣ Run the Frontend (React + Vite)
 
-Open a **new terminal**, then:
+Open a **new terminal**:
 
 ```bash
-# Navigate to the frontend folder
 cd frontend
-
-# Install dependencies
 npm install
-
-# Create local environment file
 echo VITE_API_URL=http://localhost:8000 > .env.local
-
-# Start the dev server
 npm run dev
 ```
 
-✅ Frontend running at: **http://localhost:5173**
+✅ Frontend: **http://localhost:5173**
 
 ---
 
@@ -139,20 +180,22 @@ Base URL: `http://localhost:8000`
 
 ## 🌿 Features
 
-- **Eco-stay listings** fetched live from FastAPI backend
+- **MongoDB Atlas** persistent storage — data survives server restarts
+- **Eco-stay listings** fetched live from FastAPI + Atlas backend
 - **Search** properties by name or location (debounced API calls)
 - **Filter** by price, type, and availability
 - **Dark mode** with system preference detection and localStorage persistence
 - **Reusable UI library** — Button, Input, Modal, Toast, Loader components
 - **Skeleton loading** states while fetching data
 - **Error handling** with retry support
-- **CORS configured** for local dev and Vercel production
+- **CORS** configured for local dev and Vercel production
+- **Auto-seeding** — 7 properties inserted on first run automatically
 
 ---
 
 ## 📬 Postman Collection
 
-Import `W4_APICollection_TrishulStayEase.json` into Postman to test all endpoints with pre-filled example requests and responses.
+Import `W4_APICollection_26100462.json` into Postman to test all endpoints with pre-filled example requests and responses.
 
 ---
 
