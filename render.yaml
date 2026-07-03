@@ -1,0 +1,29 @@
+# render.yaml — Render Infrastructure as Code
+# Docs: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: trishul-stayease-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+
+    envVars:
+      # ── Secret (set manually in Render dashboard — never commit this value) ──
+      - key: MONGO_URI
+        sync: false
+
+      # ── Non-secret values ─────────────────────────────────────────────────
+      - key: DB_NAME
+        value: trishul_stayease
+
+      - key: ALLOWED_ORIGINS
+        value: https://trishul-stay-ease.vercel.app,http://localhost:5173
+
+      - key: HOST
+        value: 0.0.0.0
+
+      - key: PYTHON_VERSION
+        value: 3.12.10
