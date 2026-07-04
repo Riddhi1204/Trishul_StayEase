@@ -50,12 +50,17 @@ async def register_user(db: AsyncIOMotorDatabase, data: UserCreate) -> dict:
         )
 
     now = datetime.now(timezone.utc)
+    
+    # Future-proof architecture: hosts require approval, guests do not
+    host_status = "pending" if data.role == "host" else None
+    
     user_doc = {
         "fullName":     data.fullName.strip(),
         "email":        data.email.lower().strip(),
         "phone":        data.phone,
         "passwordHash": hash_password(data.password),
         "role":         data.role,
+        "hostStatus":   host_status,
         "profileImage": None,
         "createdAt":    now,
         "updatedAt":    now,

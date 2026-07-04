@@ -69,6 +69,7 @@ class UserResponse(BaseModel):
     email: str
     phone: str
     role: str
+    hostStatus: Optional[str] = None
     profileImage: Optional[str] = None
     createdAt: datetime
 
