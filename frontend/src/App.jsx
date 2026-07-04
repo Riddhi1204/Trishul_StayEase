@@ -8,7 +8,9 @@ import About                  from './pages/About'
 import Dashboard               from './pages/Dashboard'
 import Login                   from './pages/Login'
 import Register                from './pages/Register'
-import ComponentShowcase        from './pages/ComponentShowcase'
+import ComponentShowcase       from './pages/ComponentShowcase'
+import RoleRoute               from './components/RoleRoute'
+import MyProperties            from './pages/MyProperties'
 
 function App() {
   return (
@@ -29,6 +31,13 @@ function App() {
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
+              } />
+
+              {/* Protected Routes - Hosts & Admins */}
+              <Route path="/my-properties" element={
+                <RoleRoute roles={['host', 'admin']}>
+                  <MyProperties />
+                </RoleRoute>
               } />
             </Routes>
           </BrowserRouter>

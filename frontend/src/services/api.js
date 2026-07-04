@@ -127,15 +127,25 @@ export function enrichProperty(prop) {
   const ui = TYPE_MAP[prop.type?.toLowerCase()] || DEFAULT_ENRICHMENT
   return {
     ...ui,
+    // Override with real database values if they exist
+    image:       (prop.images && prop.images.length > 0) ? prop.images[0] : ui.image,
+    description: prop.description || ui.description,
+    features:    (prop.amenities && prop.amenities.length > 0) ? prop.amenities : ui.features,
+    
     id:          prop.id,
     title:       prop.title,
     location:    prop.location,
+    city:        prop.city || '',
+    state:       prop.state || '',
+    country:     prop.country || '',
     price:       prop.price.toLocaleString('en-IN'),
     category:    prop.type?.toLowerCase() || 'other',
     status:      prop.status,
-    // Keep raw price for sorting
+    // Keep raw values for sorting/editing
     _rawPrice:   prop.price,
     _rawType:    prop.type,
+    _rawImages:  prop.images || [],
+    _rawAmenities: prop.amenities || [],
   }
 }
 
@@ -147,6 +157,15 @@ export function enrichProperty(prop) {
  */
 export async function fetchProperties() {
   const { data } = await api.get('/api/properties')
+  return data.map(enrichProperty)
+}
+
+/**
+ * Fetch all properties owned by the current host.
+ * @returns {Promise<Array>} Enriched property list
+ */
+export async function fetchMyProperties() {
+  const { data } = await api.get('/api/properties/me/all')
   return data.map(enrichProperty)
 }
 
