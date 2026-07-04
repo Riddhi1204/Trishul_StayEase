@@ -26,6 +26,7 @@ A separate `counters` collection stores the auto-increment sequence:
 """
 
 import re
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -112,6 +113,14 @@ async def get_all_properties(db: AsyncIOMotorDatabase) -> List[dict]:
     return await cursor.to_list(length=None)
 
 
+async def get_properties_by_host(
+    db: AsyncIOMotorDatabase, host_id: str
+) -> List[dict]:
+    """Return properties owned by a specific host."""
+    cursor = db[PROPERTIES_COLLECTION].find({"host_id": host_id}, _EXCLUDE_ID).sort("id", 1)
+    return await cursor.to_list(length=None)
+
+
 async def get_property_by_id(
     db: AsyncIOMotorDatabase, property_id: int
 ) -> Optional[dict]:
@@ -121,13 +130,23 @@ async def get_property_by_id(
     )
 
 
-async def create_property(db: AsyncIOMotorDatabase, data: dict) -> dict:
+async def create_property(db: AsyncIOMotorDatabase, data: dict, host_id: str) -> dict:
     """
     Insert a new property document.
-    Assigns the next auto-increment id and returns the created document.
+    Assigns the next auto-increment id, attaches host_id and timestamps, 
+    and returns the created document.
     """
     new_id  = await get_next_id(db)
-    new_doc = {"id": new_id, **data}
+    now = datetime.now(timezone.utc).isoformat()
+    
+    new_doc = {
+        "id": new_id,
+        "host_id": host_id,
+        **data,
+        "createdAt": now,
+        "updatedAt": now
+    }
+    
     await db[PROPERTIES_COLLECTION].insert_one(new_doc)
     new_doc.pop("_id", None)   # remove ObjectId before returning
     return new_doc
@@ -138,8 +157,10 @@ async def update_property(
 ) -> Optional[dict]:
     """
     Apply a partial update ($set) to an existing property.
+    Automatically updates the updatedAt timestamp.
     Returns the updated document, or None if not found.
     """
+    data["updatedAt"] = datetime.now(timezone.utc).isoformat()
     return await db[PROPERTIES_COLLECTION].find_one_and_update(
         {"id": property_id},
         {"$set": data},

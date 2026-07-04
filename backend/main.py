@@ -38,6 +38,7 @@ from database import crud
 from database.deps import get_db
 from models import ErrorResponse, PropertyCreate, PropertyResponse, PropertyUpdate
 from auth.router import router as auth_router
+from auth.dependencies import get_current_user, require_host
 
 # ── Load environment ──────────────────────────────────────────────
 load_dotenv()
@@ -191,25 +192,29 @@ async def get_property(
     "/api/properties",
     response_model=PropertyResponse,
     status_code=status.HTTP_201_CREATED,
-    responses={400: {"model": ErrorResponse}},
+    responses={400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
     tags=["Properties"],
     summary="Create a new property",
 )
 async def create_property(
     body: PropertyCreate,
     db:   AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict = Depends(require_host)
 ):
     """
     Insert a new property into MongoDB.
+    Requires Host or Admin role.
     Returns **201 Created** with the new document including its assigned `id`.
     """
-    new_prop = await crud.create_property(db, {
-        "title":    body.title.strip(),
-        "location": body.location.strip(),
-        "price":    body.price,
-        "type":     body.type.strip().lower(),
-        "status":   body.status.strip().lower(),
-    })
+    # Clean the input data strings
+    property_data = body.model_dump()
+    for field in ["title", "location", "type", "status", "description", "city", "state", "country"]:
+        if property_data.get(field):
+            property_data[field] = property_data[field].strip()
+            if field in ["type", "status"]:
+                property_data[field] = property_data[field].lower()
+
+    new_prop = await crud.create_property(db, property_data, host_id=current_user["id"])
     return new_prop
 
 
@@ -220,6 +225,8 @@ async def create_property(
     responses={
         404: {"model": ErrorResponse},
         400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
     },
     tags=["Properties"],
     summary="Update a property (partial update supported)",
@@ -228,24 +235,26 @@ async def update_property(
     property_id: int,
     body:        PropertyUpdate,
     db:          AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Partially update an existing property ($set on changed fields only).
-    Returns **404** if not found, **400** if the request body is empty.
+    Requires Owner or Admin.
     """
+    # 1. Fetch property to check ownership
+    existing_prop = await crud.get_property_by_id(db, property_id)
+    if not existing_prop:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property {property_id} not found.")
+
+    # 2. Verify authorization (Owner or Admin)
+    if current_user["role"] != "admin" and existing_prop.get("host_id") != current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to modify this property.")
+
     update_data = body.model_dump(exclude_unset=True)
     if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request body must contain at least one field to update.",
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Request body must contain at least one field to update.")
 
     updated = await crud.update_property(db, property_id, update_data)
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Property with id={property_id} not found.",
-        )
     return updated
 
 
@@ -253,25 +262,30 @@ async def update_property(
 @app.delete(
     "/api/properties/{property_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={404: {"model": ErrorResponse}},
+    responses={404: {"model": ErrorResponse}, 401: {"model": ErrorResponse}, 403: {"model": ErrorResponse}},
     tags=["Properties"],
     summary="Delete a property",
 )
 async def delete_property(
     property_id: int,
     db:          AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Permanently remove a property from MongoDB.
-    Returns **204 No Content** on success, **404** if not found.
+    Requires Owner or Admin.
     """
-    deleted = await crud.delete_property(db, property_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Property with id={property_id} not found.",
-        )
-    return None   # 204 — no body
+    # 1. Fetch property to check ownership
+    existing_prop = await crud.get_property_by_id(db, property_id)
+    if not existing_prop:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Property {property_id} not found.")
+
+    # 2. Verify authorization (Owner or Admin)
+    if current_user["role"] != "admin" and existing_prop.get("host_id") != current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this property.")
+
+    await crud.delete_property(db, property_id)
+    return None
 
 
 # ── Global exception handler ──────────────────────────────────────
