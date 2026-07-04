@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '../contexts/ThemeContext'
+import { useAuth } from '../contexts/AuthContext'
 import './Navbar.css'
-
-const navLinks = [
-  { to: '/',           label: 'Home'       },
-  { to: '/about',      label: 'About'      },
-  { to: '/dashboard',  label: 'Dashboard'  },
-  { to: '/components', label: 'UI Kit'     },
-]
 
 /** Sun icon for light mode */
 function SunIcon() {
@@ -29,7 +23,7 @@ function MoonIcon() {
   )
 }
 
-/** Theme toggle button — used in both desktop and mobile nav */
+/** Theme toggle button */
 function ThemeToggle({ className = '' }) {
   const { theme, toggleTheme } = useTheme()
   return (
@@ -47,6 +41,8 @@ function ThemeToggle({ className = '' }) {
 export default function Navbar() {
   const [scrolled,  setScrolled]  = useState(false)
   const [menuOpen,  setMenuOpen]  = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -55,6 +51,57 @@ export default function Navbar() {
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
+
+  const handleLogout = () => {
+    logout()
+    closeMenu()
+    navigate('/login')
+  }
+
+  // Dynamic role-based links
+  const getNavLinks = () => {
+    if (!isAuthenticated) {
+      return [
+        { to: '/', label: 'Home' },
+        { to: '/dashboard', label: 'Explore' }, // using /dashboard for explore currently
+        { to: '/about', label: 'About' },
+        { to: '/register', label: 'Become a Host', state: { role: 'host' } },
+      ]
+    }
+
+    if (user?.role === 'guest') {
+      return [
+        { to: '/', label: 'Home' },
+        { to: '/dashboard', label: 'Explore' },
+        { to: '/bookings', label: 'Bookings' },
+        { to: '/wishlist', label: 'Wishlist' },
+      ]
+    }
+
+    if (user?.role === 'host') {
+      return [
+        { to: '/', label: 'Home' },
+        { to: '/dashboard', label: 'Dashboard' },
+        { to: '/my-properties', label: 'My Properties' },
+        { to: '/host-bookings', label: 'Bookings' },
+        { to: '/messages', label: 'Messages' },
+      ]
+    }
+
+    if (user?.role === 'admin') {
+      return [
+        { to: '/admin', label: 'Admin Dashboard' },
+        { to: '/admin/users', label: 'Users' },
+        { to: '/admin/properties', label: 'Properties' },
+        { to: '/admin/bookings', label: 'Bookings' },
+        { to: '/admin/reports', label: 'Reports' },
+      ]
+    }
+
+    return []
+  }
+
+  const navLinks = getNavLinks()
 
   return (
     <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
@@ -69,10 +116,11 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="navbar__links" aria-label="Main navigation">
-          {navLinks.map(({ to, label }) => (
+          {navLinks.map(({ to, label, state }) => (
             <NavLink
               key={to}
               to={to}
+              state={state}
               end={to === '/'}
               className={({ isActive }) =>
                 'navbar__link' + (isActive ? ' navbar__link--active' : '')
@@ -81,13 +129,37 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
+          {/* Profile link if authenticated */}
+          {isAuthenticated && (
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                'navbar__link' + (isActive ? ' navbar__link--active' : '')
+              }
+            >
+              Profile
+            </NavLink>
+          )}
         </nav>
 
         {/* Desktop actions */}
         <div className="navbar__actions">
           <ThemeToggle />
-          <Link to="/login"     className="btn btn-outline navbar__btn-login">Login</Link>
-          <Link to="/dashboard" className="btn btn-primary navbar__btn-book">Book Now</Link>
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" className="btn btn-outline navbar__btn-login">Login</Link>
+              <Link to="/register" className="btn btn-primary navbar__btn-book">Register</Link>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Hi, <strong>{user.fullName.split(' ')[0]}</strong>
+              </span>
+              <button onClick={handleLogout} className="btn btn-outline navbar__btn-login">
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Hamburger */}
@@ -104,10 +176,11 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <div className={`navbar__mobile${menuOpen ? ' navbar__mobile--open' : ''}`}>
-        {navLinks.map(({ to, label }) => (
+        {navLinks.map(({ to, label, state }) => (
           <NavLink
             key={to}
             to={to}
+            state={state}
             end={to === '/'}
             className={({ isActive }) =>
               'navbar__mobile-link' + (isActive ? ' active' : '')
@@ -117,10 +190,29 @@ export default function Navbar() {
             {label}
           </NavLink>
         ))}
+        {isAuthenticated && (
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              'navbar__mobile-link' + (isActive ? ' active' : '')
+            }
+            onClick={closeMenu}
+          >
+            Profile
+          </NavLink>
+        )}
         <div className="navbar__mobile-actions">
           <ThemeToggle className="navbar__theme-toggle--mobile" />
-          <Link to="/login"     className="btn btn-outline"  onClick={closeMenu}>Login</Link>
-          <Link to="/dashboard" className="btn btn-primary"  onClick={closeMenu}>Book Now</Link>
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" className="btn btn-outline" onClick={closeMenu}>Login</Link>
+              <Link to="/register" className="btn btn-primary" onClick={closeMenu}>Register</Link>
+            </>
+          ) : (
+            <button onClick={handleLogout} className="btn btn-outline" style={{ width: '100%' }}>
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </header>

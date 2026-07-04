@@ -1,8 +1,8 @@
 """
 Trishul StayEase — FastAPI Backend
-Week 5: MongoDB Atlas persistent storage (Motor async driver)
+Phase 1: Authentication & Security added
 
-Endpoints  (URLs and response shapes unchanged from Week 4)
+Property Endpoints  (URLs and response shapes unchanged)
 ---------
 GET    /api/properties              List all properties
 GET    /api/properties/search       Search by title or location
@@ -11,6 +11,12 @@ GET    /api/properties/{id}         Get a single property
 POST   /api/properties              Create a new property  (201)
 PUT    /api/properties/{id}         Update a property      (200)
 DELETE /api/properties/{id}         Delete a property      (204)
+
+Auth Endpoints
+---------
+POST   /auth/register               Register new account   (201)
+POST   /auth/login                  Login, returns JWT     (200)
+GET    /auth/me                     Current user profile   (200)
 """
 
 import os
@@ -29,7 +35,9 @@ from database.connection import (
     get_database,
 )
 from database import crud
+from database.deps import get_db
 from models import ErrorResponse, PropertyCreate, PropertyResponse, PropertyUpdate
+from auth.router import router as auth_router
 
 # ── Load environment ──────────────────────────────────────────────
 load_dotenv()
@@ -64,9 +72,13 @@ app = FastAPI(
     title="Trishul StayEase API",
     description=(
         "REST API for the Trishul StayEase eco-homestay booking platform.\n\n"
-        "**Week 5:** Backed by MongoDB Atlas via Motor (async driver)."
+        "**Phase 1:** JWT Authentication + Role-Based Authorization.\n"
+        "**Backend:** MongoDB Atlas via Motor (async driver).\n\n"
+        "### Auth endpoints\n"
+        "Use `POST /auth/register` or `POST /auth/login` to get a token, "
+        "then click **Authorize** (top right) and paste: `Bearer <token>`."
     ),
-    version="2.0.0",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
@@ -82,10 +94,8 @@ app.add_middleware(
 )
 
 
-# ── DB dependency ─────────────────────────────────────────────────
-def get_db(request: Request) -> AsyncIOMotorDatabase:
-    """FastAPI dependency — injects the Motor database handle into routes."""
-    return request.app.state.db
+# ── Auth router ──────────────────────────────────────────────────
+app.include_router(auth_router)
 
 
 # ── Root health-check ─────────────────────────────────────────────

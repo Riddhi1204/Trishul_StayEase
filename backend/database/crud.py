@@ -31,9 +31,10 @@ from typing import List, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
-# ── Collection names ──────────────────────────────────────────────
+# ── Collection names ──────────────────────────────────────────────────
 PROPERTIES_COLLECTION = "properties"
 COUNTERS_COLLECTION   = "counters"
+USERS_COLLECTION      = "users"
 
 # ── Projection — always exclude MongoDB's internal _id from responses
 _EXCLUDE_ID = {"_id": 0}
@@ -53,13 +54,20 @@ SEED_DATA: List[dict] = [
 # ── Startup helpers ───────────────────────────────────────────────
 
 async def ensure_indexes(db: AsyncIOMotorDatabase) -> None:
-    """Create indexes for common query patterns."""
+    """Create indexes for properties and users collections."""
+    # Properties
     col = db[PROPERTIES_COLLECTION]
     await col.create_index("id",       unique=True)
     await col.create_index("type")
     await col.create_index("status")
     await col.create_index("price")
     await col.create_index([("title", 1), ("location", 1)])
+
+    # Users — unique email and phone enforced at database level
+    users_col = db[USERS_COLLECTION]
+    await users_col.create_index("email", unique=True)
+    await users_col.create_index("phone", unique=True)
+    await users_col.create_index("role")
 
 
 async def seed_if_empty(db: AsyncIOMotorDatabase) -> None:
@@ -185,3 +193,65 @@ async def filter_properties(
 
     cursor = db[PROPERTIES_COLLECTION].find(query, _EXCLUDE_ID).sort("id", 1)
     return await cursor.to_list(length=None)
+
+
+# ── User CRUD ──────────────────────────────────────────────────
+# Users use MongoDB ObjectId as primary key (converted to string).
+# passwordHash is NEVER returned by public-facing functions.
+
+def _clean_user(doc: dict, include_password: bool = False) -> Optional[dict]:
+    """
+    Convert a raw MongoDB user document to an API-safe dict.
+    - Converts ObjectId _id -> string id
+    - Strips passwordHash unless include_password=True (auth service only)
+    """
+    if doc is None:
+        return None
+    doc["id"] = str(doc["_id"])
+    doc.pop("_id")
+    if not include_password:
+        doc.pop("passwordHash", None)
+    return doc
+
+
+async def create_user(db: AsyncIOMotorDatabase, data: dict) -> dict:
+    """Insert a new user. Returns created user WITHOUT passwordHash."""
+    result = await db[USERS_COLLECTION].insert_one(data)
+    doc    = await db[USERS_COLLECTION].find_one({"_id": result.inserted_id})
+    return _clean_user(doc)
+
+
+async def get_user_by_email(
+    db: AsyncIOMotorDatabase,
+    email: str,
+    include_password: bool = False,
+) -> Optional[dict]:
+    """
+    Find a user by email.
+    Set include_password=True only inside auth service for credential verification.
+    """
+    doc = await db[USERS_COLLECTION].find_one({"email": email.lower()})
+    return _clean_user(doc, include_password=include_password)
+
+
+async def get_user_by_id(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+) -> Optional[dict]:
+    """Find a user by ObjectId string. Returns user WITHOUT passwordHash."""
+    from bson import ObjectId
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        return None
+    doc = await db[USERS_COLLECTION].find_one({"_id": oid})
+    return _clean_user(doc)
+
+
+async def get_user_by_phone(
+    db: AsyncIOMotorDatabase,
+    phone: str,
+) -> Optional[dict]:
+    """Find a user by phone number. Used for uniqueness check on registration."""
+    doc = await db[USERS_COLLECTION].find_one({"phone": phone})
+    return _clean_user(doc)

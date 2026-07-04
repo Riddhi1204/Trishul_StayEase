@@ -28,16 +28,36 @@ const api = axios.create({
   },
 })
 
-// ── Request interceptor — attach auth token if present ────────────────────────
+// ── Request interceptor — attach JWT to every request ────────────────────
 api.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    const token = localStorage.getItem('trishul-token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
   (error) => Promise.reject(error)
 )
 
-// ── Response interceptor — normalise errors ───────────────────────────────────
+// ── Response interceptor — normalise errors + handle 401 ─────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      // Don't redirect on auth endpoint failures (bad credentials, not expired token)
+      const isAuthCall = error.config?.url?.includes('/auth/')
+      const onAuthPage = ['/login', '/register'].includes(window.location.pathname)
+
+      if (!isAuthCall && !onAuthPage) {
+        // Token expired or invalid — clear session and redirect
+        localStorage.removeItem('trishul-token')
+        localStorage.removeItem('trishul-user')
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+    }
+
     const message =
       error.response?.data?.detail ||
       error.message ||
