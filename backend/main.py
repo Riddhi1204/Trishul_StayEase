@@ -164,6 +164,20 @@ async def list_properties(db: AsyncIOMotorDatabase = Depends(get_db)):
     """Return every property from MongoDB, sorted by id."""
     return await crud.get_all_properties(db)
 
+# ── Get My Properties (Host) ──────────────────────────────────────
+@app.get(
+    "/api/properties/me/all",
+    response_model=List[PropertyResponse],
+    tags=["Properties"],
+    summary="List properties owned by the authenticated host",
+)
+async def get_my_properties(
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: dict = Depends(require_host)
+):
+    """Return properties owned by the authenticated host."""
+    return await crud.get_properties_by_host(db, current_user["id"])
+
 
 # ── Get one ───────────────────────────────────────────────────────
 @app.get(
