@@ -37,22 +37,27 @@ class PropertyUpdate(BaseModel):
 # ── Response schemas ─────────────────────────────────────────────
 
 class PropertyResponse(BaseModel):
-    """Full property object returned by the API."""
+    """Full property object returned by the API.
+
+    Fields added in Phase 2 (description, city, state, country, amenities,
+    images) carry safe defaults so legacy seed documents that pre-date the
+    schema change are still serializable without causing HTTP 500 errors.
+    """
     id:          int
-    host_id:     Optional[str] = None
+    host_id:     Optional[str]      = None
     title:       str
-    description: str
+    description: str                = ""
     location:    str
-    city:        str
-    state:       str
-    country:     str
+    city:        str                = ""
+    state:       str                = ""
+    country:     str                = "India"
     price:       int
     type:        str
     status:      str
-    amenities:   list[str]
-    images:      list[str]
-    createdAt:   Optional[str] = None
-    updatedAt:   Optional[str] = None
+    amenities:   list[str]          = Field(default_factory=list)
+    images:      list[str]          = Field(default_factory=list)
+    createdAt:   Optional[str]      = None
+    updatedAt:   Optional[str]      = None
 
     model_config = {"from_attributes": True}
 
