@@ -82,11 +82,12 @@ export default function PropertyForm({ property, onClose, onSuccess }) {
       padding: '20px'
     }}>
       <div className="modal-content" style={{
-        background: 'var(--bg-secondary)', padding: '2rem',
+        background: 'var(--bg-card)', padding: '2.5rem',
         borderRadius: '16px', width: '100%', maxWidth: '600px',
-        maxHeight: '90vh', overflowY: 'auto'
+        maxHeight: '90vh', overflowY: 'auto',
+        boxShadow: 'var(--shadow-lg)'
       }}>
-        <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>
+        <h2 style={{ marginBottom: '1.5rem', color: 'var(--text)' }}>
           {isEditing ? 'Edit Property' : 'Add New Property'}
         </h2>
 
@@ -156,7 +157,7 @@ export default function PropertyForm({ property, onClose, onSuccess }) {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+            <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
             <button type="submit" disabled={loading} className="btn btn-primary" style={{ flex: 1 }}>
               {loading ? 'Saving...' : 'Save Property'}
             </button>
@@ -167,20 +168,20 @@ export default function PropertyForm({ property, onClose, onSuccess }) {
           .form-input {
             width: 100%;
             padding: 0.75rem 1rem;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color, #334155);
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            color: var(--text-primary);
+            color: var(--text);
             margin-top: 0.25rem;
             outline: none;
             transition: border-color 0.2s;
           }
           .form-input:focus {
-            border-color: var(--primary-color, #52b788);
+            border-color: var(--primary);
           }
           label {
             font-size: 0.875rem;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             font-weight: 500;
           }
         `}</style>
