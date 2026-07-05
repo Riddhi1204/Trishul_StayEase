@@ -162,6 +162,28 @@ npm run dev
 
 ---
 
+## 🌍 Production Deployment
+
+### 1. Deploy the Backend to Render
+1. Create a **Web Service** on Render and point it to your GitHub repository.
+2. Set the `Root Directory` to `backend`.
+3. Render will automatically detect the settings from `render.yaml`.
+4. In the Render Dashboard, add the following Environment Variables:
+   - `MONGO_URI`: Your MongoDB Atlas connection string.
+   - `JWT_SECRET`: A secure randomly generated string.
+   - `ALLOWED_ORIGINS`: `https://trishul-stay-ease.vercel.app` (or your frontend URL)
+
+### 2. Deploy the Frontend to Vercel
+1. Import your repository into Vercel.
+2. Set the **Framework Preset** to `Vite`.
+3. Set the **Root Directory** to `frontend`.
+4. In the **Environment Variables** section, add:
+   - Name: `VITE_API_URL`
+   - Value: `https://your-backend-app-name.onrender.com` (Your live Render backend URL)
+5. Click **Deploy**. Vercel will automatically connect to your Render backend via this variable.
+
+---
+
 ## 🔌 API Endpoints
 
 Base URL: `http://localhost:8000`
