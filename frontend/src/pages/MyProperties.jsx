@@ -12,7 +12,7 @@ export default function MyProperties() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingProperty, setEditingProperty] = useState(null)
   
-  const { addToast } = useToast()
+  const { showToast } = useToast()
 
   const loadProperties = async () => {
     setLoading(true)
@@ -46,10 +46,10 @@ export default function MyProperties() {
     
     try {
       await deleteProperty(id)
-      addToast('Property deleted successfully.', 'success')
+      showToast('Property deleted successfully.', 'success')
       setProperties(prev => prev.filter(p => p.id !== id))
     } catch (err) {
-      addToast(err.message || 'Failed to delete property.', 'error')
+      showToast(err.message || 'Failed to delete property.', 'error')
     }
   }
 

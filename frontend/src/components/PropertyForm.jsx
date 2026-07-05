@@ -5,7 +5,7 @@ import { useToast } from './ui/Toast'
 const TYPE_OPTIONS = ['mountain', 'forest', 'riverside', 'coastal', 'urban', 'desert']
 
 export default function PropertyForm({ property, onClose, onSuccess }) {
-  const { addToast } = useToast()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const isEditing = !!property
 
@@ -61,14 +61,14 @@ export default function PropertyForm({ property, onClose, onSuccess }) {
     try {
       if (isEditing) {
         await updateProperty(property.id, payload)
-        addToast('Property updated successfully!', 'success')
+        showToast('Property updated successfully!', 'success')
       } else {
         await createProperty(payload)
-        addToast('Property created successfully!', 'success')
+        showToast('Property created successfully!', 'success')
       }
       onSuccess()
     } catch (error) {
-      addToast(error.message || 'Failed to save property', 'error')
+      showToast(error.message || 'Failed to save property', 'error')
     } finally {
       setLoading(false)
     }
