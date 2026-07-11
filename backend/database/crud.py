@@ -38,6 +38,8 @@ from fastapi import HTTPException, status
 PROPERTIES_COLLECTION = "properties"
 COUNTERS_COLLECTION   = "counters"
 USERS_COLLECTION      = "users"
+BOOKINGS_COLLECTION   = "bookings"
+WISHLISTS_COLLECTION  = "wishlists"
 
 # ── Projection — always exclude MongoDB's internal _id from responses
 _EXCLUDE_ID = {"_id": 0}
@@ -323,3 +325,78 @@ async def get_user_by_phone(
     """Find a user by phone number. Used for uniqueness check on registration."""
     doc = await db[USERS_COLLECTION].find_one({"phone": phone})
     return _clean_user(doc)
+
+
+# ── Generic helpers ──────────────────────────────────────────────────
+def _clean_doc(doc: dict) -> Optional[dict]:
+    if not doc:
+        return None
+    doc["id"] = str(doc["_id"])
+    doc.pop("_id")
+    return doc
+
+# ── Bookings CRUD ──────────────────────────────────────────────────
+async def create_booking(db: AsyncIOMotorDatabase, data: dict) -> dict:
+    data["createdAt"] = datetime.now(timezone.utc).isoformat()
+    data["updatedAt"] = data["createdAt"]
+    result = await db[BOOKINGS_COLLECTION].insert_one(data)
+    doc = await db[BOOKINGS_COLLECTION].find_one({"_id": result.inserted_id})
+    return _clean_doc(doc)
+
+async def get_guest_bookings(db: AsyncIOMotorDatabase, guest_id: str) -> List[dict]:
+    cursor = db[BOOKINGS_COLLECTION].find({"guest_id": guest_id}).sort("createdAt", -1)
+    return [_clean_doc(d) async for d in cursor]
+
+async def get_host_bookings(db: AsyncIOMotorDatabase, host_id: str) -> List[dict]:
+    cursor = db[BOOKINGS_COLLECTION].find({"host_id": host_id}).sort("createdAt", -1)
+    return [_clean_doc(d) async for d in cursor]
+
+async def update_booking_status(db: AsyncIOMotorDatabase, booking_id: str, status: str, user_id: str, role: str) -> Optional[dict]:
+    from bson import ObjectId
+    try:
+        oid = ObjectId(booking_id)
+    except Exception:
+        return None
+        
+    # Optional: could check if user_id == guest_id (if cancelling) or host_id (if approving/rejecting) inside router
+    doc = await db[BOOKINGS_COLLECTION].find_one_and_update(
+        {"_id": oid},
+        {"$set": {"status": status, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        return_document=ReturnDocument.AFTER
+    )
+    return _clean_doc(doc)
+
+async def get_booking_by_id(db: AsyncIOMotorDatabase, booking_id: str) -> Optional[dict]:
+    from bson import ObjectId
+    try: oid = ObjectId(booking_id)
+    except: return None
+    doc = await db[BOOKINGS_COLLECTION].find_one({"_id": oid})
+    return _clean_doc(doc)
+
+
+# ── Wishlists CRUD ──────────────────────────────────────────────────
+async def get_wishlist(db: AsyncIOMotorDatabase, guest_id: str) -> dict:
+    doc = await db[WISHLISTS_COLLECTION].find_one({"guest_id": guest_id})
+    if not doc:
+        doc = {"guest_id": guest_id, "property_ids": []}
+        result = await db[WISHLISTS_COLLECTION].insert_one(doc)
+        doc = await db[WISHLISTS_COLLECTION].find_one({"_id": result.inserted_id})
+    return _clean_doc(doc)
+
+async def add_to_wishlist(db: AsyncIOMotorDatabase, guest_id: str, property_id: int) -> dict:
+    doc = await db[WISHLISTS_COLLECTION].find_one_and_update(
+        {"guest_id": guest_id},
+        {"$addToSet": {"property_ids": property_id}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER
+    )
+    return _clean_doc(doc)
+
+async def remove_from_wishlist(db: AsyncIOMotorDatabase, guest_id: str, property_id: int) -> dict:
+    doc = await db[WISHLISTS_COLLECTION].find_one_and_update(
+        {"guest_id": guest_id},
+        {"$pull": {"property_ids": property_id}},
+        return_document=ReturnDocument.AFTER
+    )
+    return _clean_doc(doc)
+

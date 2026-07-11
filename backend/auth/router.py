@@ -17,6 +17,8 @@ from auth.schemas import MessageResponse, TokenResponse, UserCreate, UserLogin, 
 from auth.service import login_user, register_user
 from auth.google import verify_google_token_and_login
 from database.deps import get_db
+from database import crud
+from models import ProfileUpdate
 from security.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -110,3 +112,27 @@ async def get_me(
     Requires: Authorization: Bearer <token>
     """
     return UserResponse(**current_user)
+
+
+@router.put(
+    "/me",
+    response_model=UserResponse,
+    summary="Update current authenticated user profile",
+)
+async def update_me(
+    data: ProfileUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> UserResponse:
+    """
+    Updates the profile of the currently authenticated user.
+    """
+    update_data = data.model_dump(exclude_unset=True)
+    if not update_data:
+        return UserResponse(**current_user)
+        
+    updated = await crud.update_user(db, current_user["id"], update_data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return UserResponse(**updated)

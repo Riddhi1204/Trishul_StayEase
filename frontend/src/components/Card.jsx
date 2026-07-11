@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import './Card.css'
 
 export default function Card({
+  id,
   image,
   tag,
   title,
@@ -11,6 +12,9 @@ export default function Card({
   rating,
   reviews,
   features = [],
+  isWishlisted = false,
+  onWishlistClick,
+  onBookClick,
 }) {
   return (
     <article className="card" role="article">
@@ -18,7 +22,14 @@ export default function Card({
       <div className="card__img-wrap">
         <div className="card__img" style={{ backgroundImage: `url(${image})` }} />
         <div className="card__tag">{tag}</div>
-        <button className="card__wishlist" aria-label="Add to wishlist">♡</button>
+        <button 
+          className="card__wishlist" 
+          aria-label="Add to wishlist"
+          onClick={() => onWishlistClick && onWishlistClick(id)}
+          style={{ color: isWishlisted ? 'red' : 'inherit' }}
+        >
+          {isWishlisted ? '❤️' : '♡'}
+        </button>
       </div>
 
       {/* Body */}
@@ -49,9 +60,9 @@ export default function Card({
             <span className="card__price-value">₹{price}</span>
             <span className="card__price-unit"> / night</span>
           </div>
-          <Link to="/dashboard" className="btn btn-primary card__btn">
+          <button onClick={() => onBookClick && onBookClick(id)} className="btn btn-primary card__btn">
             Book Now
-          </Link>
+          </button>
         </div>
       </div>
     </article>

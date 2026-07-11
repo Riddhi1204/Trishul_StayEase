@@ -62,6 +62,51 @@ class PropertyResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class BookingCreate(BaseModel):
+    """Schema for creating a new booking."""
+    property_id: int = Field(..., example=1)
+    start_date: str = Field(..., example="2023-12-01")
+    end_date: str = Field(..., example="2023-12-05")
+    guests: int = Field(..., gt=0, example=2)
+    total_amount: int = Field(..., gt=0, example=12000)
+
+
+class BookingResponse(BaseModel):
+    """Schema for returned booking objects."""
+    id: str
+    property_id: int
+    guest_id: str
+    host_id: str
+    start_date: str
+    end_date: str
+    guests: int
+    total_amount: int
+    status: str = "upcoming"
+    payment_status: str = "pending"
+    createdAt: str
+    updatedAt: str
+    property: Optional[PropertyResponse] = None
+
+    model_config = {"from_attributes": True}
+
+
+class WishlistResponse(BaseModel):
+    """Schema for returned wishlist objects."""
+    id: str
+    guest_id: str
+    property_ids: list[int]
+    properties: Optional[list[PropertyResponse]] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ProfileUpdate(BaseModel):
+    """Schema for updating user profile."""
+    fullName: Optional[str] = Field(None, min_length=2, max_length=100)
+    phone: Optional[str] = Field(None)
+
+
+
 # ── Error schema ─────────────────────────────────────────────────
 
 class ErrorResponse(BaseModel):

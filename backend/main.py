@@ -45,6 +45,9 @@ from auth.dependencies import get_current_user, require_host
 from middleware.security import SecurityHeadersMiddleware
 from security.rate_limit import limiter
 
+from routers.bookings import router as bookings_router
+from routers.wishlists import router as wishlists_router
+
 # ── Load environment ──────────────────────────────────────────────
 load_dotenv()
 
@@ -110,6 +113,10 @@ app.add_middleware(
 
 # ── Auth router ──────────────────────────────────────────────────
 app.include_router(auth_router)
+
+# ── Bookings & Wishlists routers ─────────────────────────────────
+app.include_router(bookings_router)
+app.include_router(wishlists_router)
 
 
 # ── Root health-check ─────────────────────────────────────────────

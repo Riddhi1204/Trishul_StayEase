@@ -63,7 +63,7 @@ export default function Navbar() {
     if (!isAuthenticated) {
       return [
         { to: '/', label: 'Home' },
-        { to: '/dashboard', label: 'Explore' }, // using /dashboard for explore currently
+        { to: '/explore', label: 'Explore' }, // using /explore now
         { to: '/about', label: 'About' },
         { to: '/register', label: 'Become a Host', state: { role: 'host' } },
       ]
@@ -72,7 +72,7 @@ export default function Navbar() {
     if (user?.role === 'guest') {
       return [
         { to: '/', label: 'Home' },
-        { to: '/dashboard', label: 'Explore' },
+        { to: '/explore', label: 'Explore' },
         { to: '/bookings', label: 'Bookings' },
         { to: '/wishlist', label: 'Wishlist' },
       ]

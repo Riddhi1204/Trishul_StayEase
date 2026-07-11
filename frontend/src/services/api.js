@@ -230,4 +230,50 @@ export async function filterProperties(params = {}) {
   return data.map(enrichProperty)
 }
 
+// ── Profile API ────────────────────────────────────────────────────────
+export async function updateProfile(payload) {
+  const { data } = await api.put('/auth/me', payload)
+  return data
+}
+
+// ── Wishlist API ───────────────────────────────────────────────────────
+export async function fetchWishlist() {
+  const { data } = await api.get('/api/wishlist')
+  if (data.properties) {
+    data.properties = data.properties.map(enrichProperty)
+  }
+  return data
+}
+
+export async function addToWishlist(propertyId) {
+  const { data } = await api.post(`/api/wishlist/${propertyId}`)
+  return data
+}
+
+export async function removeFromWishlist(propertyId) {
+  const { data } = await api.delete(`/api/wishlist/${propertyId}`)
+  return data
+}
+
+// ── Bookings API ───────────────────────────────────────────────────────
+export async function createBooking(payload) {
+  const { data } = await api.post('/api/bookings', payload)
+  return data
+}
+
+export async function fetchGuestBookings() {
+  const { data } = await api.get('/api/bookings/me')
+  return data.map(b => ({...b, property: enrichProperty(b.property)}))
+}
+
+export async function fetchHostBookings() {
+  const { data } = await api.get('/api/bookings/host')
+  return data.map(b => ({...b, property: enrichProperty(b.property)}))
+}
+
+export async function updateBookingStatus(bookingId, status) {
+  const { data } = await api.put(`/api/bookings/${bookingId}/status`, { status })
+  return {...data, property: enrichProperty(data.property)}
+}
+
 export default api

@@ -11,6 +11,10 @@ import Register                from './pages/Register'
 import ComponentShowcase       from './pages/ComponentShowcase'
 import RoleRoute               from './components/RoleRoute'
 import MyProperties            from './pages/MyProperties'
+import Explore                 from './pages/Explore'
+import GuestBookings           from './pages/GuestBookings'
+import Wishlist                from './pages/Wishlist'
+import Profile                 from './pages/Profile'
 
 function App() {
   return (
@@ -21,19 +25,38 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/"           element={<Home />} />
+              <Route path="/explore"    element={<Explore />} />
               <Route path="/about"      element={<About />} />
               <Route path="/login"      element={<Login />} />
               <Route path="/register"   element={<Register />} />
               <Route path="/components" element={<ComponentShowcase />} />
 
               {/* Protected Routes - Any authenticated user */}
-              <Route path="/dashboard" element={
+              <Route path="/profile" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Profile />
                 </ProtectedRoute>
               } />
 
+              <Route path="/bookings" element={
+                <RoleRoute roles={['guest']}>
+                  <GuestBookings />
+                </RoleRoute>
+              } />
+
+              <Route path="/wishlist" element={
+                <RoleRoute roles={['guest']}>
+                  <Wishlist />
+                </RoleRoute>
+              } />
+
               {/* Protected Routes - Hosts & Admins */}
+              <Route path="/dashboard" element={
+                <RoleRoute roles={['host', 'admin']}>
+                  <Dashboard />
+                </RoleRoute>
+              } />
+
               <Route path="/my-properties" element={
                 <RoleRoute roles={['host', 'admin']}>
                   <MyProperties />
