@@ -276,4 +276,10 @@ export async function updateBookingStatus(bookingId, status) {
   return {...data, property: enrichProperty(data.property)}
 }
 
+// ── Dashboard API ──────────────────────────────────────────────────────
+export async function fetchDashboardStats() {
+  const { data } = await api.get('/api/dashboard/host')
+  return data
+}
+
 export default api
