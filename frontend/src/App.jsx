@@ -13,6 +13,7 @@ import RoleRoute               from './components/RoleRoute'
 import MyProperties            from './pages/MyProperties'
 import Explore                 from './pages/Explore'
 import GuestBookings           from './pages/GuestBookings'
+import HostBookings            from './pages/HostBookings'
 import Wishlist                from './pages/Wishlist'
 import Profile                 from './pages/Profile'
 
@@ -60,6 +61,12 @@ function App() {
               <Route path="/my-properties" element={
                 <RoleRoute roles={['host', 'admin']}>
                   <MyProperties />
+                </RoleRoute>
+              } />
+
+              <Route path="/host-bookings" element={
+                <RoleRoute roles={['host', 'admin']}>
+                  <HostBookings />
                 </RoleRoute>
               } />
             </Routes>
