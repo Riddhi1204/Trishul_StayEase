@@ -50,7 +50,7 @@ load_dotenv()
 
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000",
+    "http://localhost:5173,http://localhost:3000,https://trishul-stay-ease.vercel.app",
 ).split(",")
 
 
