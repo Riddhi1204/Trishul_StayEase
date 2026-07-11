@@ -25,7 +25,7 @@ import {
   useState,
 } from 'react'
 
-import { loginUser, registerUser } from '../services/auth'
+import { loginUser, registerUser, googleLogin } from '../services/auth'
 
 const AuthContext = createContext(null)
 
@@ -90,6 +90,22 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const loginWithGoogle = useCallback(async (idToken, role = 'guest') => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { access_token, user: userData } = await googleLogin(idToken, role)
+      persistSession(access_token, userData)
+      setUser(userData)
+      return userData
+    } catch (err) {
+      setError(err.message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const logout = useCallback(() => {
     clearSession()
     setUser(null)
@@ -106,6 +122,7 @@ export function AuthProvider({ children }) {
         error,
         login,
         register,
+        loginWithGoogle,
         logout,
         clearError,
         isAuthenticated: !!user,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -6,10 +6,12 @@ import { useAuth } from '../contexts/AuthContext'
 import './Login.css' // Reusing Login's excellent styling
 
 export default function Register() {
-  const { register, loading, error, clearError, isAuthenticated } = useAuth()
+  const { register, loginWithGoogle, loading, error, clearError, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/'
+
+  const googleButtonRef = useRef(null)
 
   const [form, setForm] = useState({
     fullName: '',
@@ -21,16 +23,66 @@ export default function Register() {
   })
   const [errors, setErrors] = useState({})
   const [showPw, setShowPw] = useState(false)
+  const [strength, setStrength] = useState(0)
 
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) navigate(from, { replace: true })
   }, [isAuthenticated, from, navigate])
 
+  // Calculate password strength
+  useEffect(() => {
+    const pw = form.password
+    if (!pw) {
+      setStrength(0)
+      return
+    }
+    let s = 0
+    if (pw.length >= 8) s++
+    if (/[A-Z]/.test(pw)) s++
+    if (/[a-z]/.test(pw) && /\d/.test(pw)) s++
+    if (/[@$!%*?&#^]/.test(pw)) s++
+    setStrength(s)
+  }, [form.password])
+
   // Clear server errors when form changes
   useEffect(() => {
     if (error) clearError()
   }, [form]) // eslint-disable-line
+
+  // Keep track of latest role for Google button callback
+  const roleRef = useRef(form.role)
+  useEffect(() => {
+    roleRef.current = form.role
+  }, [form.role])
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '506642311597-ln1liscp1tij57ass4r27hi2ttabtmc3.apps.googleusercontent.com',
+          callback: async (response) => {
+            try {
+              await loginWithGoogle(response.credential, roleRef.current)
+            } catch (err) {
+              console.error("Google login failed", err)
+            }
+          },
+        })
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'continue_with',
+          shape: 'rectangular',
+        })
+      } else {
+        setTimeout(initGoogle, 100)
+      }
+    }
+    initGoogle()
+  }, [loginWithGoogle])
 
   const validate = () => {
     const errs = {}
@@ -96,7 +148,16 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="login-form-panel">
+          <div className="login-form-panel" style={{ position: 'relative' }}>
+            {loading && (
+              <div className="auth-loading-overlay">
+                <div style={{
+                  width: 40, height: 40,
+                  border: '3px solid #2d6a4f', borderTop: '3px solid #52b788',
+                  borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                }} />
+              </div>
+            )}
             <div className="login-toggle" role="tablist">
               <Link to="/login" className="login-toggle__btn" style={{ textDecoration: 'none' }}>
                 Sign In
@@ -111,6 +172,14 @@ export default function Register() {
               <p className="login-form__sub">
                 Join us and start your sustainable travel journey.
               </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', minHeight: '44px' }}>
+              <div ref={googleButtonRef}></div>
+            </div>
+
+            <div className="login-divider">
+              <span>or sign up with email</span>
             </div>
 
             {error && (
@@ -181,6 +250,30 @@ export default function Register() {
                     {showPw ? '🙈' : '👁️'}
                   </button>
                 </div>
+                {form.password && (
+                  <div className="password-strength">
+                    <div className="password-strength-bars">
+                      <div className={`strength-bar ${strength >= 1 ? 'active-weak' : ''}`} />
+                      <div className={`strength-bar ${strength >= 2 ? 'active-fair' : ''}`} />
+                      <div className={`strength-bar ${strength >= 3 ? 'active-good' : ''}`} />
+                      <div className={`strength-bar ${strength >= 4 ? 'active-strong' : ''}`} />
+                    </div>
+                    <ul className="password-requirements">
+                      <li className={form.password.length >= 8 ? 'met' : ''}>
+                        {form.password.length >= 8 ? '✓' : '○'} At least 8 characters
+                      </li>
+                      <li className={/[A-Z]/.test(form.password) ? 'met' : ''}>
+                        {/[A-Z]/.test(form.password) ? '✓' : '○'} One uppercase letter
+                      </li>
+                      <li className={/[a-z]/.test(form.password) && /\d/.test(form.password) ? 'met' : ''}>
+                        {/[a-z]/.test(form.password) && /\d/.test(form.password) ? '✓' : '○'} Letters & numbers
+                      </li>
+                      <li className={/[@$!%*?&#^]/.test(form.password) ? 'met' : ''}>
+                        {/[@$!%*?&#^]/.test(form.password) ? '✓' : '○'} One special character
+                      </li>
+                    </ul>
+                  </div>
+                )}
                 {errors.password && <p className="form-error">{errors.password}</p>}
               </div>
 

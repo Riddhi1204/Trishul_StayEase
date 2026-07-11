@@ -22,7 +22,7 @@ class JWTSettings:
     SECRET: str = os.getenv("JWT_SECRET", "CHANGE_THIS_INSECURE_DEFAULT")
     ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
 
-    # Access token: default 7 days (10 080 minutes)
+    # Access token: 7 days (10080 minutes) for development and testing
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
         os.getenv("JWT_EXPIRE_MINUTES", "10080")
     )

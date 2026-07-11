@@ -53,11 +53,35 @@ class UserCreate(BaseModel):
             raise ValueError("Passwords do not match.")
         return self
 
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long.")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter.")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit.")
+        if not re.search(r"[@$!%*?&#^]", v):
+            raise ValueError("Password must contain at least one special character.")
+        return v
+
 
 class UserLogin(BaseModel):
     """Schema for POST /auth/login."""
     email: EmailStr = Field(..., examples=["ananya@example.com"])
     password: str = Field(..., examples=["SecurePass@123"])
+
+
+class GoogleAuthRequest(BaseModel):
+    """Schema for POST /auth/google."""
+    idToken: str = Field(..., description="The JWT ID token returned by Google")
+    role: Literal["guest", "host"] = Field(
+        default="guest",
+        description="Role for new users. Ignored if the user already exists."
+    )
 
 
 # ── Response schemas ──────────────────────────────────────────────
@@ -69,6 +93,7 @@ class UserResponse(BaseModel):
     email: str
     phone: str
     role: str
+    authProvider: str = "local"
     hostStatus: Optional[str] = None
     profileImage: Optional[str] = None
     createdAt: datetime

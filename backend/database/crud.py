@@ -255,6 +255,29 @@ async def get_user_by_email(
     return _clean_user(doc, include_password=include_password)
 
 
+async def update_user(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    data: dict,
+) -> Optional[dict]:
+    """
+    Apply a partial update ($set) to an existing user.
+    """
+    from bson import ObjectId
+    try:
+        oid = ObjectId(user_id)
+    except Exception:
+        return None
+    
+    data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    doc = await db[USERS_COLLECTION].find_one_and_update(
+        {"_id": oid},
+        {"$set": data},
+        return_document=ReturnDocument.AFTER,
+    )
+    return _clean_user(doc)
+
+
 async def get_user_by_id(
     db: AsyncIOMotorDatabase,
     user_id: str,

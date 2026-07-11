@@ -29,6 +29,17 @@ export async function loginUser(email, password) {
 }
 
 /**
+ * Login or Register with Google ID Token.
+ * @param {string} idToken
+ * @param {string} role (optional, default 'guest')
+ * @returns {{ access_token, token_type, user }}
+ */
+export async function googleLogin(idToken, role = 'guest') {
+  const { data: response } = await api.post('/auth/google', { idToken, role })
+  return response
+}
+
+/**
  * Fetch the current authenticated user profile.
  * JWT is attached automatically by the Axios interceptor.
  * @returns {UserResponse}

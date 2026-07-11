@@ -162,6 +162,22 @@ npm run dev
 
 ---
 
+## 6. Security and Authentication (Week 6)
+
+### Authentication Flow
+- **JWT (JSON Web Tokens)**: Used for stateless session management.
+  - Access tokens are signed using a secure secret key and expire in 24 hours.
+  - The client stores the token in `localStorage` and sends it via the `Authorization: Bearer <token>` header.
+- **Google OAuth**: Integrated using `@react-oauth/google` and `google-auth` on the backend for secure Google Sign-In.
+- **Password Security**: Passwords are cryptographically hashed using `bcrypt` (via `passlib`).
+  - Frontend includes a **password strength meter** requiring: 8+ characters, uppercase, lowercase, numbers, and special characters.
+
+### Security Enhancements
+- **Rate Limiting**: Implemented via `slowapi` on critical endpoints (`/auth/login`, `/auth/register`) to prevent brute-force and DDoS attacks.
+- **Security Headers**: Custom middleware (`middleware/security.py`) implements security headers like `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, and restrictive `Content-Security-Policy`.
+- **CORS Configuration**: Restricted allowed origins in production for better cross-origin security.
+- **Data Sanitization & Limits**: Applied constraints to search queries (`max_length=100`) to prevent excessive load on database querying.
+
 ## 🌍 Production Deployment
 
 ### 1. Deploy the Backend to Render

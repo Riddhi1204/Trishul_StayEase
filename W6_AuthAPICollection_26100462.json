@@ -1,0 +1,289 @@
+{
+  "info": {
+    "_postman_id": "trishul-stayease-w4-collection",
+    "name": "W6_AuthAPICollection_TrishulStayEase",
+    "description": "Week 6 \u2014 Trishul StayEase REST API Collection\nBase URL: http://localhost:8000\n\nCovers Auth and Property endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Test User\",\n  \"email\": \"test@trishul.dev\",\n  \"phone\": \"+919876543210\",\n  \"password\": \"Test@1234\",\n  \"confirmPassword\": \"Test@1234\",\n  \"role\": \"guest\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@trishul.dev\",\n  \"password\": \"Test@1234\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Current User (Me)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/me",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <YOUR_TOKEN_HERE>"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Google Login",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/google",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idToken\": \"<GOOGLE_JWT_ID_TOKEN>\",\n  \"role\": \"guest\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/",
+        "description": "Root health-check endpoint"
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"status\":\"ok\",\"message\":\"Trishul StayEase API is running \ud83c\udf3f\"}"
+        }
+      ]
+    },
+    {
+      "name": "List All Properties",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/properties",
+        "description": "Returns the full list of all properties in memory."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "[{\"id\":1,\"title\":\"Mountain Retreat\",\"location\":\"Munsiyari, Uttarakhand\",\"price\":3200,\"type\":\"mountain\",\"status\":\"available\"},{\"id\":2,\"title\":\"Forest Cabin\",\"location\":\"Coorg, Karnataka\",\"price\":2800,\"type\":\"forest\",\"status\":\"available\"}]"
+        }
+      ]
+    },
+    {
+      "name": "Get Property by ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/properties/1",
+        "description": "Returns a single property by its integer ID."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"id\":1,\"title\":\"Mountain Retreat\",\"location\":\"Munsiyari, Uttarakhand\",\"price\":3200,\"type\":\"mountain\",\"status\":\"available\"}"
+        },
+        {
+          "name": "404 Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\"detail\":\"Property with id=99 not found.\"}"
+        }
+      ]
+    },
+    {
+      "name": "Create Property",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/properties",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Beach Hut\",\n  \"location\": \"Goa, India\",\n  \"price\": 2500,\n  \"type\": \"coastal\",\n  \"status\": \"available\"\n}"
+        },
+        "description": "Creates a new property. Returns 201 with the created object including assigned id."
+      },
+      "response": [
+        {
+          "name": "201 Created",
+          "status": "Created",
+          "code": 201,
+          "body": "{\"id\":9,\"title\":\"Beach Hut\",\"location\":\"Goa, India\",\"price\":2500,\"type\":\"coastal\",\"status\":\"available\"}"
+        },
+        {
+          "name": "422 Validation Error",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\"detail\":[{\"loc\":[\"body\",\"price\"],\"msg\":\"Input should be greater than 0\",\"type\":\"greater_than\"}]}"
+        }
+      ]
+    },
+    {
+      "name": "Update Property",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/properties/1",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 3500,\n  \"status\": \"booked\"\n}"
+        },
+        "description": "Partially updates a property. Only fields present in the body are changed."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"id\":1,\"title\":\"Mountain Retreat\",\"location\":\"Munsiyari, Uttarakhand\",\"price\":3500,\"type\":\"mountain\",\"status\":\"booked\"}"
+        },
+        {
+          "name": "404 Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\"detail\":\"Property with id=99 not found.\"}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Property",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/properties/7",
+        "description": "Deletes a property by ID. Returns 204 No Content on success."
+      },
+      "response": [
+        {
+          "name": "204 No Content",
+          "status": "No Content",
+          "code": 204,
+          "body": ""
+        },
+        {
+          "name": "404 Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\"detail\":\"Property with id=99 not found.\"}"
+        }
+      ]
+    },
+    {
+      "name": "Search Properties",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/properties/search?q=mountain",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "properties",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "mountain"
+            }
+          ]
+        },
+        "description": "Search properties by keyword in title or location (case-insensitive)."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "[{\"id\":1,\"title\":\"Mountain Retreat\",\"location\":\"Munsiyari, Uttarakhand\",\"price\":3200,\"type\":\"mountain\",\"status\":\"available\"},{\"id\":6,\"title\":\"Himalayan Bungalow\",\"location\":\"Kasol, Himachal Pradesh\",\"price\":4200,\"type\":\"mountain\",\"status\":\"booked\"}]"
+        }
+      ]
+    },
+    {
+      "name": "Filter Properties",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/properties/filter?max_price=3000&status=available",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "properties",
+            "filter"
+          ],
+          "query": [
+            {
+              "key": "max_price",
+              "value": "3000"
+            },
+            {
+              "key": "status",
+              "value": "available"
+            }
+          ]
+        },
+        "description": "Filter by max price, type, and/or status. All params are optional."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "status": "OK",
+          "code": 200,
+          "body": "[{\"id\":2,\"title\":\"Forest Cabin\",\"location\":\"Coorg, Karnataka\",\"price\":2800,\"type\":\"forest\",\"status\":\"available\"},{\"id\":3,\"title\":\"Riverside Homestay\",\"location\":\"Rishikesh, Uttarakhand\",\"price\":2400,\"type\":\"riverside\",\"status\":\"available\"}]"
+        }
+      ]
+    }
+  ]
+}

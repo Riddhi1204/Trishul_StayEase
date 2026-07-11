@@ -9,13 +9,15 @@ Routes:
     GET  /auth/me        — get current user profile from JWT
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from auth.dependencies import get_current_user
-from auth.schemas import MessageResponse, TokenResponse, UserCreate, UserLogin, UserResponse
+from auth.schemas import MessageResponse, TokenResponse, UserCreate, UserLogin, UserResponse, GoogleAuthRequest
 from auth.service import login_user, register_user
+from auth.google import verify_google_token_and_login
 from database.deps import get_db
+from security.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -26,7 +28,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user account",
 )
+@limiter.limit("5/15minutes")
 async def register(
+    request: Request,
     data: UserCreate,
     db: AsyncIOMotorDatabase = Depends(get_db),
 ) -> TokenResponse:
@@ -50,7 +54,9 @@ async def register(
     response_model=TokenResponse,
     summary="Login with email and password",
 )
+@limiter.limit("5/15minutes")
 async def login(
+    request: Request,
     data: UserLogin,
     db: AsyncIOMotorDatabase = Depends(get_db),
 ) -> TokenResponse:
@@ -61,6 +67,29 @@ async def login(
     Returns 401 for any credential mismatch (generic message prevents enumeration).
     """
     result = await login_user(db, data)
+    return TokenResponse(
+        access_token=result["token"],
+        user=UserResponse(**result["user"]),
+    )
+
+
+@router.post(
+    "/google",
+    response_model=TokenResponse,
+    summary="Login or Register with Google",
+)
+@limiter.limit("5/15minutes")
+async def google_login(
+    request: Request,
+    data: GoogleAuthRequest,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> TokenResponse:
+    """
+    Authenticate with a Google ID token.
+    If the user does not exist, an account is created automatically.
+    Returns a JWT access token + user profile on success.
+    """
+    result = await verify_google_token_and_login(db, data.idToken, data.role)
     return TokenResponse(
         access_token=result["token"],
         user=UserResponse(**result["user"]),

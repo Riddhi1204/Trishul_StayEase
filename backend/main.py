@@ -28,6 +28,9 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from database.connection import (
     close_mongo_connection,
@@ -39,6 +42,8 @@ from database.deps import get_db
 from models import ErrorResponse, PropertyCreate, PropertyResponse, PropertyUpdate
 from auth.router import router as auth_router
 from auth.dependencies import get_current_user, require_host
+from middleware.security import SecurityHeadersMiddleware
+from security.rate_limit import limiter
 
 # ── Load environment ──────────────────────────────────────────────
 load_dotenv()
@@ -85,13 +90,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Rate Limiting ─────────────────────────────────────────────────
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+# ── Security Headers ──────────────────────────────────────────────
+app.add_middleware(SecurityHeadersMiddleware)
+
 # ── CORS ──────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
 )
 
 
@@ -121,7 +134,7 @@ async def health(db: AsyncIOMotorDatabase = Depends(get_db)):
     summary="Search properties by title or location",
 )
 async def search_properties(
-    q:  str = Query(..., min_length=1, description="Search term matched against title and location"),
+    q:  str = Query(..., min_length=1, max_length=50, description="Search term matched against title and location"),
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
     """

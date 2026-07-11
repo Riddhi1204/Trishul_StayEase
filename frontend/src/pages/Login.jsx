@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -6,10 +6,12 @@ import { useAuth } from '../contexts/AuthContext'
 import './Login.css'
 
 export default function Login() {
-  const { login, loading, error, clearError, isAuthenticated } = useAuth()
+  const { login, loginWithGoogle, loading, error, clearError, isAuthenticated } = useAuth()
   const navigate  = useNavigate()
   const location  = useLocation()
   const from      = location.state?.from?.pathname || '/'
+
+  const googleButtonRef = useRef(null)
 
   const [form,   setForm]   = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
@@ -24,6 +26,34 @@ export default function Login() {
   useEffect(() => {
     if (error) clearError()
   }, [form]) // eslint-disable-line
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '506642311597-ln1liscp1tij57ass4r27hi2ttabtmc3.apps.googleusercontent.com',
+          callback: async (response) => {
+            try {
+              await loginWithGoogle(response.credential)
+            } catch (err) {
+              console.error("Google login failed", err)
+            }
+          },
+        })
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'continue_with',
+          shape: 'rectangular',
+        })
+      } else {
+        setTimeout(initGoogle, 100)
+      }
+    }
+    initGoogle()
+  }, [loginWithGoogle])
 
   const validate = () => {
     const errs = {}
@@ -83,7 +113,17 @@ export default function Login() {
           </div>
 
           {/* Right form panel */}
-          <div className="login-form-panel">
+          <div className="login-form-panel" style={{ position: 'relative' }}>
+            {loading && (
+              <div className="auth-loading-overlay">
+                <div style={{
+                  width: 40, height: 40,
+                  border: '3px solid #2d6a4f', borderTop: '3px solid #52b788',
+                  borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                }} />
+              </div>
+            )}
+            
             {/* Mode toggle */}
             <div className="login-toggle" role="tablist">
               <button
@@ -107,6 +147,14 @@ export default function Login() {
               <p className="login-form__sub">
                 Sign in to access your bookings and saved stays.
               </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', minHeight: '44px' }}>
+              <div ref={googleButtonRef}></div>
+            </div>
+
+            <div className="login-divider">
+              <span>or sign in with email</span>
             </div>
 
             {/* Server error banner */}
