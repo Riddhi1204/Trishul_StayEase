@@ -31,6 +31,8 @@ from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
+from pymongo.errors import DuplicateKeyError
+from fastapi import HTTPException, status
 
 # ── Collection names ──────────────────────────────────────────────────
 PROPERTIES_COLLECTION = "properties"
@@ -67,7 +69,17 @@ async def ensure_indexes(db: AsyncIOMotorDatabase) -> None:
     # Users — unique email and phone enforced at database level
     users_col = db[USERS_COLLECTION]
     await users_col.create_index("email", unique=True)
-    await users_col.create_index("phone", unique=True)
+    
+    try:
+        await users_col.drop_index("phone_1")
+    except Exception:
+        pass
+        
+    await users_col.create_index(
+        "phone", 
+        unique=True, 
+        partialFilterExpression={"phone": {"$exists": True, "$type": "string"}}
+    )
     await users_col.create_index("role")
 
 
@@ -237,9 +249,21 @@ def _clean_user(doc: dict, include_password: bool = False) -> Optional[dict]:
 
 async def create_user(db: AsyncIOMotorDatabase, data: dict) -> dict:
     """Insert a new user. Returns created user WITHOUT passwordHash."""
-    result = await db[USERS_COLLECTION].insert_one(data)
-    doc    = await db[USERS_COLLECTION].find_one({"_id": result.inserted_id})
-    return _clean_user(doc)
+    try:
+        result = await db[USERS_COLLECTION].insert_one(data)
+        doc    = await db[USERS_COLLECTION].find_one({"_id": result.inserted_id})
+        return _clean_user(doc)
+    except DuplicateKeyError as e:
+        if "phone" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Phone number already registered."
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered."
+            )
 
 
 async def get_user_by_email(

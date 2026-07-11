@@ -59,7 +59,6 @@ async def verify_google_token_and_login(db: AsyncIOMotorDatabase, token: str, ro
         user_doc = {
             "fullName": name or "Google User",
             "email": email,
-            "phone": None, # Google doesn't always provide this
             "passwordHash": None, # No password for Google users
             "role": role,
             "authProvider": "google",

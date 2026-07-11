@@ -91,7 +91,7 @@ class UserResponse(BaseModel):
     id: str
     fullName: str
     email: str
-    phone: str
+    phone: Optional[str] = None
     role: str
     authProvider: str = "local"
     hostStatus: Optional[str] = None
