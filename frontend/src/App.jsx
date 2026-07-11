@@ -16,6 +16,7 @@ import GuestBookings           from './pages/GuestBookings'
 import HostBookings            from './pages/HostBookings'
 import Wishlist                from './pages/Wishlist'
 import Profile                 from './pages/Profile'
+import Messages                from './pages/Messages'
 
 function App() {
   return (
@@ -36,6 +37,12 @@ function App() {
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/messages" element={
+                <ProtectedRoute>
+                  <Messages />
                 </ProtectedRoute>
               } />
 

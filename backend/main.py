@@ -48,6 +48,7 @@ from security.rate_limit import limiter
 from routers.bookings import router as bookings_router
 from routers.wishlists import router as wishlists_router
 from routers.dashboard import router as dashboard_router
+from routers.messages import router as messages_router
 
 # ── Load environment ──────────────────────────────────────────────
 load_dotenv()
@@ -119,6 +120,7 @@ app.include_router(auth_router)
 app.include_router(bookings_router)
 app.include_router(wishlists_router)
 app.include_router(dashboard_router)
+app.include_router(messages_router)
 
 
 # ── Root health-check ─────────────────────────────────────────────

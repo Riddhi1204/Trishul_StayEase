@@ -112,3 +112,17 @@ class ProfileUpdate(BaseModel):
 class ErrorResponse(BaseModel):
     """Standard error envelope."""
     detail: str
+
+class MessageCreate(BaseModel):
+    booking_id: str
+    message: constr(min_length=1, max_length=1000)
+
+class MessageResponse(BaseModel):
+    id: str
+    booking_id: str
+    property_id: int
+    sender_id: str
+    receiver_id: str
+    message: str
+    created_at: datetime
+    read: bool

@@ -282,4 +282,20 @@ export async function fetchDashboardStats() {
   return data
 }
 
+// ── Messages API ───────────────────────────────────────────────────────
+export async function fetchInbox() {
+  const { data } = await api.get('/api/messages/inbox')
+  return data
+}
+
+export async function fetchConversation(bookingId) {
+  const { data } = await api.get(`/api/messages/conversation/${bookingId}`)
+  return data
+}
+
+export async function sendMessage(payload) {
+  const { data } = await api.post('/api/messages', payload)
+  return data
+}
+
 export default api

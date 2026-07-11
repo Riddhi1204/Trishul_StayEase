@@ -40,6 +40,7 @@ COUNTERS_COLLECTION   = "counters"
 USERS_COLLECTION      = "users"
 BOOKINGS_COLLECTION   = "bookings"
 WISHLISTS_COLLECTION  = "wishlists"
+MESSAGES_COLLECTION = "messages"
 
 # ── Projection — always exclude MongoDB's internal _id from responses
 _EXCLUDE_ID = {"_id": 0}
@@ -400,3 +401,38 @@ async def remove_from_wishlist(db: AsyncIOMotorDatabase, guest_id: str, property
     )
     return _clean_doc(doc)
 
+# ── Messages ──────────────────────────────────────────────────────────────
+
+async def create_message(db: AsyncIOMotorDatabase, booking_id: str, sender_id: str, receiver_id: str, property_id: int, message: str) -> dict:
+    """Insert a new message into a booking's conversation."""
+    new_message = {
+        "booking_id": booking_id,
+        "property_id": property_id,
+        "sender_id": sender_id,
+        "receiver_id": receiver_id,
+        "message": message,
+        "created_at": datetime.utcnow(),
+        "read": False
+    }
+    result = await db[MESSAGES_COLLECTION].insert_one(new_message)
+    new_message["_id"] = result.inserted_id
+    new_message["id"] = str(result.inserted_id)
+    del new_message["_id"]
+    return new_message
+
+async def get_conversation(db: AsyncIOMotorDatabase, booking_id: str) -> list:
+    """Get all messages for a booking, ordered by time."""
+    cursor = db[MESSAGES_COLLECTION].find({"booking_id": booking_id}).sort("created_at", 1)
+    messages = []
+    async for msg in cursor:
+        msg["id"] = str(msg["_id"])
+        del msg["_id"]
+        messages.append(msg)
+    return messages
+
+async def mark_messages_read(db: AsyncIOMotorDatabase, booking_id: str, receiver_id: str):
+    """Mark all messages in a booking as read by the receiver."""
+    await db[MESSAGES_COLLECTION].update_many(
+        {"booking_id": booking_id, "receiver_id": receiver_id, "read": False},
+        {"$set": {"read": True}}
+    )
