@@ -108,7 +108,7 @@ export default function Navbar() {
       <div className="navbar__inner container">
         {/* Logo */}
         <Link to="/" className="navbar__logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <img src="/logo.svg" alt="Trishul StayEase Logo" style={{ height: '300px', width: 'auto' }} />
+          <img src="/logo.svg" alt="Trishul StayEase Logo" style={{ height: '156px', width: 'auto' }} />
         </Link>
 
         {/* Desktop nav */}
