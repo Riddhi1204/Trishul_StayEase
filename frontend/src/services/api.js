@@ -298,4 +298,10 @@ export async function sendMessage(payload) {
   return data
 }
 
+// ── Contact API ────────────────────────────────────────────────────────
+export async function submitContactForm(payload) {
+  const { data } = await api.post('/api/contact', payload)
+  return data
+}
+
 export default api

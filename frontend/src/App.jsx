@@ -17,6 +17,10 @@ import HostBookings            from './pages/HostBookings'
 import Wishlist                from './pages/Wishlist'
 import Profile                 from './pages/Profile'
 import Messages                from './pages/Messages'
+import PrivacyPolicy           from './pages/PrivacyPolicy'
+import TermsOfService          from './pages/TermsOfService'
+import Contact                 from './pages/Contact'
+import NotFound                from './pages/NotFound'
 
 function App() {
   return (
@@ -32,6 +36,9 @@ function App() {
               <Route path="/login"      element={<Login />} />
               <Route path="/register"   element={<Register />} />
               <Route path="/components" element={<ComponentShowcase />} />
+              <Route path="/privacy"    element={<PrivacyPolicy />} />
+              <Route path="/terms"      element={<TermsOfService />} />
+              <Route path="/contact"    element={<Contact />} />
 
               {/* Protected Routes - Any authenticated user */}
               <Route path="/profile" element={
@@ -76,6 +83,9 @@ function App() {
                   <HostBookings />
                 </RoleRoute>
               } />
+
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

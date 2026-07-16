@@ -41,6 +41,7 @@ USERS_COLLECTION      = "users"
 BOOKINGS_COLLECTION   = "bookings"
 WISHLISTS_COLLECTION  = "wishlists"
 MESSAGES_COLLECTION = "messages"
+CONTACTS_COLLECTION = "contacts"
 
 # ── Projection — always exclude MongoDB's internal _id from responses
 _EXCLUDE_ID = {"_id": 0}
@@ -436,3 +437,11 @@ async def mark_messages_read(db: AsyncIOMotorDatabase, booking_id: str, receiver
         {"booking_id": booking_id, "receiver_id": receiver_id, "read": False},
         {"$set": {"read": True}}
     )
+
+# ── Contacts ──────────────────────────────────────────────────────────────
+
+async def create_contact_message(db: AsyncIOMotorDatabase, data: dict) -> dict:
+    data["createdAt"] = datetime.now(timezone.utc).isoformat()
+    result = await db[CONTACTS_COLLECTION].insert_one(data)
+    doc = await db[CONTACTS_COLLECTION].find_one({"_id": result.inserted_id})
+    return _clean_doc(doc)

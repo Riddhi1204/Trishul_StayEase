@@ -94,6 +94,10 @@ export default function Explore() {
 
   const debounceRef = useRef(null)
 
+  useEffect(() => {
+    document.title = "Explore Sustainable Homestays | Trishul StayEase"
+  }, [])
+
   // ── Show toast ──────────────────────────────────────────────────
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type })

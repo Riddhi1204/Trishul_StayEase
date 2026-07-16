@@ -75,6 +75,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
 
+  useEffect(() => {
+    document.title = "Trishul StayEase | Eco-Friendly Homestays"
+  }, [])
+
   const loadStays = async () => {
     setLoading(true)
     setError(null)

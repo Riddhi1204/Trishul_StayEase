@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trishul-stayease.onrender.com/sitemap.xml

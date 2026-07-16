@@ -15,10 +15,13 @@ const footerLinks = {
     { label: 'Careers',     to: '/about'     },
   ],
   Support: [
-    { label: 'Help Center', to: '/about'  },
-    { label: 'Safety',      to: '/about'  },
-    { label: 'Cancellation',to: '/about'  },
-    { label: 'Contact Us',  to: '/about'  },
+    { label: 'Contact',     to: '/contact' },
+    { label: 'FAQs',        to: '/contact' },
+    { label: 'Help Center', to: '/contact' },
+  ],
+  Legal: [
+    { label: 'Privacy Policy',   to: '/privacy' },
+    { label: 'Terms of Service', to: '/terms'   },
   ],
 }
 
@@ -29,9 +32,8 @@ export default function Footer() {
         <div className="container footer__grid">
           {/* Brand */}
           <div className="footer__brand">
-            <Link to="/" className="footer__logo">
-              <span>🌿</span>
-              <span>Trishul <strong>StayEase</strong></span>
+            <Link to="/" className="footer__logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <img src="/logo.svg" alt="Trishul StayEase Logo" style={{ height: '32px', width: 'auto' }} />
             </Link>
             <p className="footer__tagline">
               Connecting travellers with authentic eco-homestays across India's most
@@ -90,11 +92,11 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="footer__bottom">
         <div className="container footer__bottom-inner">
-          <p>© {new Date().getFullYear()} Trishul StayEase. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Trishul StayEase. Built with ❤️ for sustainable travel.</p>
           <div className="footer__bottom-links">
-            <a href="#" className="footer__bottom-link">Privacy Policy</a>
-            <a href="#" className="footer__bottom-link">Terms of Service</a>
-            <a href="#" className="footer__bottom-link">Cookie Policy</a>
+            <Link to="/privacy" className="footer__bottom-link">Privacy Policy</Link>
+            <Link to="/terms" className="footer__bottom-link">Terms of Service</Link>
+            <Link to="/contact" className="footer__bottom-link">Contact</Link>
           </div>
         </div>
       </div>

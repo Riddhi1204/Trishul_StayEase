@@ -107,11 +107,8 @@ export default function Navbar() {
     <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
       <div className="navbar__inner container">
         {/* Logo */}
-        <Link to="/" className="navbar__logo" onClick={closeMenu}>
-          <span className="navbar__logo-icon">🌿</span>
-          <span className="navbar__logo-text">
-            Trishul <span className="navbar__logo-accent">StayEase</span>
-          </span>
+        <Link to="/" className="navbar__logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <img src="/logo.svg" alt="Trishul StayEase Logo" style={{ height: '56px', width: 'auto' }} />
         </Link>
 
         {/* Desktop nav */}

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Literal, Optional
+from datetime import datetime
 
 
 # ── Request schemas ──────────────────────────────────────────────
@@ -115,7 +116,7 @@ class ErrorResponse(BaseModel):
 
 class MessageCreate(BaseModel):
     booking_id: str
-    message: constr(min_length=1, max_length=1000)
+    message: str = Field(..., min_length=1, max_length=1000)
 
 class MessageResponse(BaseModel):
     id: str
@@ -126,3 +127,11 @@ class MessageResponse(BaseModel):
     message: str
     created_at: datetime
     read: bool
+
+# ── Contact Model ────────────────────────────────────────────────────────
+
+class ContactCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., pattern=r"^\S+@\S+\.\S+$")
+    subject: str = Field(..., min_length=3, max_length=150)
+    message: str = Field(..., min_length=10, max_length=2000)
