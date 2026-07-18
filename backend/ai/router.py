@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/ai", tags=["AI Planner"])
     response_model=TravelPlanResponse,
     summary="Generate an AI-powered Eco Travel Plan",
 )
-@limiter.limit("3/minute")
+@limiter.limit("15/minute")
 async def create_travel_plan(
     request: Request,
     body: TravelPlanRequest,
