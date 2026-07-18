@@ -299,9 +299,17 @@ export async function sendMessage(payload) {
 }
 
 // ── Contact API ────────────────────────────────────────────────────────
-export async function submitContactForm(payload) {
-  const { data } = await api.post('/api/contact', payload)
-  return data
+// ===== CONTACT =====
+export const submitContactForm = async (data) => {
+  const response = await api.post('/api/contact', data)
+  return response.data
 }
+
+// ===== AI PLANNER =====
+export const generateTravelPlan = async (data) => {
+  const response = await api.post('/api/ai/travel-plan', data)
+  return response.data
+}
+
 
 export default api

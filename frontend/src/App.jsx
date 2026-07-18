@@ -21,6 +21,7 @@ import PrivacyPolicy           from './pages/PrivacyPolicy'
 import TermsOfService          from './pages/TermsOfService'
 import Contact                 from './pages/Contact'
 import NotFound                from './pages/NotFound'
+import AITravelPlanner         from './pages/AITravelPlanner'
 
 function App() {
   return (
@@ -50,6 +51,12 @@ function App() {
               <Route path="/messages" element={
                 <ProtectedRoute>
                   <Messages />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/ai-planner" element={
+                <ProtectedRoute>
+                  <AITravelPlanner />
                 </ProtectedRoute>
               } />
 

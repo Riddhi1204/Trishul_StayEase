@@ -126,16 +126,26 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
-          {/* Profile link if authenticated */}
+          {/* Profile and AI Planner links if authenticated */}
           {isAuthenticated && (
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                'navbar__link' + (isActive ? ' navbar__link--active' : '')
-              }
-            >
-              Profile
-            </NavLink>
+            <>
+              <NavLink
+                to="/ai-planner"
+                className={({ isActive }) =>
+                  'navbar__link' + (isActive ? ' navbar__link--active' : '')
+                }
+              >
+                ✨ AI Planner
+              </NavLink>
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  'navbar__link' + (isActive ? ' navbar__link--active' : '')
+                }
+              >
+                Profile
+              </NavLink>
+            </>
           )}
         </nav>
 
@@ -188,15 +198,26 @@ export default function Navbar() {
           </NavLink>
         ))}
         {isAuthenticated && (
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              'navbar__mobile-link' + (isActive ? ' active' : '')
-            }
-            onClick={closeMenu}
-          >
-            Profile
-          </NavLink>
+          <>
+            <NavLink
+              to="/ai-planner"
+              className={({ isActive }) =>
+                'navbar__mobile-link' + (isActive ? ' active' : '')
+              }
+              onClick={closeMenu}
+            >
+              ✨ AI Planner
+            </NavLink>
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                'navbar__mobile-link' + (isActive ? ' active' : '')
+              }
+              onClick={closeMenu}
+            >
+              Profile
+            </NavLink>
+          </>
         )}
         <div className="navbar__mobile-actions">
           <ThemeToggle className="navbar__theme-toggle--mobile" />
