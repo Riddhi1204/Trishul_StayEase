@@ -10,9 +10,9 @@ import {
   fetchWishlist,
   addToWishlist,
   removeFromWishlist,
-  createBooking,
 } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import BookingModal from '../components/BookingModal'
 import './Explore.css'
 
 // ── Skeleton card ─────────────────────────────────────────────────────────────
@@ -90,6 +90,7 @@ export default function Explore() {
   const [maxPrice,       setMaxPrice]       = useState('')
   const [toast,          setToast]          = useState(null)
   const [wishlistedIds,  setWishlistedIds]  = useState(new Set())
+  const [bookingProperty, setBookingProperty] = useState(null)
   const { user } = useAuth()
 
   const debounceRef = useRef(null)
@@ -249,23 +250,10 @@ export default function Explore() {
       return
     }
     
-    // Create a mock booking for 3 days starting tomorrow
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const end = new Date()
-    end.setDate(end.getDate() + 4)
-    
-    try {
-      await createBooking({
-        property_id: id,
-        start_date: tomorrow.toISOString().split('T')[0],
-        end_date: end.toISOString().split('T')[0],
-        guests: 2,
-        total_amount: 15000 // mock price
-      })
-      showToast('Booking successful! View it in your Bookings tab.', 'success')
-    } catch (err) {
-      showToast(err.message, 'error')
+    // Find the property and open modal
+    const prop = displayStays.find(s => s.id === id)
+    if (prop) {
+      setBookingProperty(prop)
     }
   }
 
@@ -508,6 +496,15 @@ export default function Explore() {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Booking Modal */}
+      {bookingProperty && (
+        <BookingModal 
+          property={bookingProperty}
+          onClose={() => setBookingProperty(null)}
+          onSuccess={() => setBookingProperty(null)}
         />
       )}
     </div>
