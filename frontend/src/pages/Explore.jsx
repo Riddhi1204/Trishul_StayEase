@@ -7,11 +7,11 @@ import {
   searchProperties,
   filterProperties,
   deleteProperty,
-  fetchWishlist,
   addToWishlist,
   removeFromWishlist,
 } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate, useLocation } from 'react-router-dom'
 import BookingModal from '../components/BookingModal'
 import './Explore.css'
 
@@ -92,6 +92,8 @@ export default function Explore() {
   const [wishlistedIds,  setWishlistedIds]  = useState(new Set())
   const [bookingProperty, setBookingProperty] = useState(null)
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const debounceRef = useRef(null)
 
@@ -242,7 +244,8 @@ export default function Explore() {
 
   const handleBookClick = async (id) => {
     if (!user) {
-      showToast('Please login to book.', 'info')
+      showToast('Redirecting to login...', 'info')
+      navigate('/login', { state: { from: location } })
       return
     }
     if (user.role !== 'guest') {

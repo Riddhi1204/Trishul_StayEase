@@ -4,6 +4,8 @@ import Hero   from '../components/Hero'
 import Card   from '../components/Card'
 import Footer from '../components/Footer'
 import { fetchProperties } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
+import { useNavigate, useLocation } from 'react-router-dom'
 import './Home.css'
 
 // ── Static enrichment data for stays that come from the API ───────────────────
@@ -74,6 +76,10 @@ export default function Home() {
   const [stays,   setStays]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
+  
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     document.title = "Trishul StayEase | Eco-Friendly Homestays"
@@ -96,6 +102,14 @@ export default function Home() {
   useEffect(() => {
     loadStays()
   }, [])
+
+  const handleBookClick = (id) => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/explore' } } })
+    } else {
+      navigate('/explore')
+    }
+  }
 
   return (
     <div className="page-wrapper">
@@ -158,7 +172,7 @@ export default function Home() {
                 ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
                 : error
                   ? <ErrorBanner message={error} onRetry={loadStays} />
-                  : stays.map(stay => <Card key={stay.id} {...stay} />)
+                  : stays.map(stay => <Card key={stay.id} {...stay} onBookClick={handleBookClick} />)
               }
             </div>
           </div>
