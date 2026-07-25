@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { fetchHostBookings, updateBookingStatus } from '../services/api'
@@ -37,11 +37,13 @@ export default function HostBookings() {
     }
   }
 
-  const filteredBookings = bookings.filter(b => {
-    if (filter === 'all') return true
-    if (filter === 'cancelled' && (b.status === 'cancelled' || b.status === 'rejected')) return true
-    return b.status === filter
-  })
+  const filteredBookings = useMemo(() => {
+    return bookings.filter(b => {
+      if (filter === 'all') return true
+      if (filter === 'cancelled' && (b.status === 'cancelled' || b.status === 'rejected')) return true
+      return b.status === filter
+    })
+  }, [bookings, filter])
 
   return (
     <div className="page-wrapper">

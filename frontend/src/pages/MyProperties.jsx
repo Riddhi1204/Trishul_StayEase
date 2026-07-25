@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { fetchMyProperties, deleteProperty, updateProperty, fetchHostBookings } from '../services/api'
 import { useToast } from '../components/ui/Toast'
 import PropertyForm from '../components/PropertyForm'
@@ -84,10 +84,12 @@ export default function MyProperties() {
     }
   }
 
-  const filteredProperties = properties.filter(p => 
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.location.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredProperties = useMemo(() => {
+    return properties.filter(p => 
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      p.location.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [properties, searchQuery])
 
   return (
     <div className="page-wrapper">
