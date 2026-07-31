@@ -6,7 +6,7 @@ A modern full-stack eco-homestay booking platform built with **React + Vite** (f
 
 ---
 
-## 📋 Deliverable 2: Deployment Documentation
+## 📋 Deployment Documentation
 
 - **Live frontend URL:** [https://trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
 - **Live backend URL:** [https://trishul-stayease.onrender.com/docs](https://trishul-stayease.onrender.com/docs) (Swagger UI)
