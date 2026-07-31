@@ -6,6 +6,17 @@ A modern full-stack eco-homestay booking platform built with **React + Vite** (f
 
 ---
 
+## 📋 Deliverable 2: Deployment Documentation
+
+- **Live frontend URL:** [https://trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
+- **Live backend URL:** [https://trishul-stayease.onrender.com/docs](https://trishul-stayease.onrender.com/docs) (Swagger UI)
+- **Tech stack summary:** React + Vite on the frontend, FastAPI + Python on the backend, MongoDB Atlas for the database.
+- **Known limitations on free tier:**
+  - The Render free tier spins down the backend after 15 minutes of inactivity — the first request after being idle may take 30–60 seconds to wake up.
+  - The MongoDB Atlas free tier (M0 cluster) has limited storage (512MB) and restricted concurrent connection limits.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
