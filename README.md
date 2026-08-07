@@ -1,114 +1,86 @@
-# 🏡 Trishul StayEase – Direct Booking Engine
+# 🏡 Trishul StayEase – Eco-Homestay Direct Booking Engine
 
-A modern full-stack eco-homestay booking platform built with **React + Vite** (frontend) and **FastAPI + MongoDB Atlas** (backend). Helps eco-homestay owners accept direct reservations without relying on third-party OTAs.
-
-🌐 **Live Demo:** [trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
+> A full-stack, AI-powered sustainable homestay discovery and direct booking engine connecting mindful travellers with authentic eco-friendly stays across India.
 
 ---
 
-## 📋 Deployment Documentation
+## 🌐 Live Demo
 
-- **Live frontend URL:** [https://trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
-- **Live backend URL:** [https://trishul-stayease.onrender.com/docs](https://trishul-stayease.onrender.com/docs) (Swagger UI)
-- **Tech stack summary:** React + Vite on the frontend, FastAPI + Python on the backend, MongoDB Atlas for the database.
-- **Known limitations on free tier:**
-  - The Render free tier spins down the backend after 15 minutes of inactivity — the first request after being idle may take 30–60 seconds to wake up.
-  - The MongoDB Atlas free tier (M0 cluster) has limited storage (512MB) and restricted concurrent connection limits.
+- **Frontend Application (Vercel):** [https://trishul-stay-ease.vercel.app](https://trishul-stay-ease.vercel.app)
+- **Backend API & Swagger Docs (Render):** [https://trishul-stayease.onrender.com/docs](https://trishul-stayease.onrender.com/docs)
+
+---
+
+## 🎥 Demo Video
+
+- **Video Walkthrough (YouTube Unlisted):** `[Link will be updated after recording]`
+
+---
+
+## 📸 Screenshots
+
+| 1. Explore & Sustainable Stays | 2. AI Eco Travel Planner |
+| :---: | :---: |
+| ![Explore Stays](https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=60) <br> *Browse, filter, and search eco-certified homestays* | ![AI Planner](https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=60) <br> *Generate personalized sustainable itineraries with Gemini AI* |
+
+| 3. Host Analytics Dashboard | 4. Interactive Booking Modal |
+| :---: | :---: |
+| ![Host Dashboard](https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=60) <br> *Real-time metrics: revenue, bookings, and occupancy* | ![Booking Flow](https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&auto=format&fit=crop&q=60) <br> *Instant dynamic price calculation and date validation* |
+
+---
+
+## ✨ Features
+
+- **🌿 Eco-Stay Discovery & Advanced Filters**: Search listings by location/title with debounced API queries; filter by category (Mountain, Forest, Riverside, Coastal), price ceiling, and availability.
+- **🤖 AI-Powered Eco Travel Planner**: Integrated with **Google Gemini 1.5 Flash** to generate custom eco-travel itineraries, sustainability tips, packing essentials, and budget allocations with server-side TTL caching.
+- **🔐 Secure Authentication & Dual Roles**:
+  - JWT token-based authentication with 24-hour expiration and refresh token support.
+  - One-click **Google OAuth 2.0** Single Sign-On (SSO).
+  - Role-Based Access Control (**Guest** vs. **Host/Admin**).
+  - Password hashing with Bcrypt and interactive frontend strength validation.
+- **📅 Real-Time Booking Management**:
+  - Dynamic check-in/check-out date selection with automated multi-night price calculation.
+  - Status lifecycle tracking (`upcoming`, `completed`, `cancelled`, `rejected`).
+  - Unauthenticated users clicking "Book Now" are redirected to login/signup with preserved navigation state.
+- **📊 Host Property & Analytics Dashboard**:
+  - Full CRUD operations for homestay listings (image URLs, amenities, pricing, availability toggle).
+  - Host metrics: Total properties, active bookings, gross revenue, and occupancy rate calculations.
+- **❤️ Guest Wishlist & In-App Messaging**:
+  - Save favourite properties to personal wishlist with one-click toggles.
+  - Direct communication channel between guests and hosts per booking.
+- **🛡️ Production-Ready Reliability & UX**:
+  - Global React `ErrorBoundary` fallback UI.
+  - Dark / Light mode toggle with local storage persistence.
+  - Rate limiting with `SlowAPI` on critical endpoints.
+  - Responsive layout optimized for mobile (375px), tablet (768px), and desktop (1440px).
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
+| Layer | Technologies |
 |---|---|
-| **Frontend** | React 19, Vite 8, React Router 7, Tailwind CSS v4, Axios |
-| **Backend** | Python, FastAPI, Pydantic v2, Uvicorn |
-| **Database** | MongoDB Atlas, Motor (async driver), PyMongo |
-| **Styling** | Vanilla CSS + Tailwind CSS (dark mode supported) |
-| **Deployment** | Vercel (Frontend) |
-| **Tools** | Git & GitHub, Postman, VS Code |
+| **Frontend** | React 19, Vite, React Router 7, Vanilla CSS + Tailwind CSS, Axios, Context API |
+| **Backend** | Python 3.11, FastAPI, Pydantic v2, Uvicorn, Motor (Async MongoDB Driver) |
+| **Database** | MongoDB Atlas (Cloud M0 Cluster) |
+| **AI Integration** | Google Gemini 1.5 Flash via `@google/genai` SDK |
+| **Security & Auth** | JWT (`python-jose`), Google OAuth 2.0, Bcrypt (`passlib`), SlowAPI (Rate Limiting) |
+| **Deployment** | Vercel (Frontend SPA), Render (Backend Web Service) |
 
 ---
 
-## 📂 Project Structure
-
-```
-Trishul_StayEase/
-│
-├── frontend/                        # React + Vite app (deployed on Vercel)
-│   ├── src/
-│   │   ├── components/              # Navbar, Hero, Card, Footer
-│   │   ├── components/ui/           # Button, Input, Modal, Toast, Loader
-│   │   ├── contexts/                # ThemeContext (dark mode)
-│   │   ├── pages/                   # Home, About, Dashboard, Login, ComponentShowcase
-│   │   ├── services/
-│   │   │   └── api.js               # Axios API service layer
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── .env.local                   # VITE_API_URL (git-ignored)
-│   ├── vercel.json                  # SPA routing config
-│   └── package.json
-│
-├── backend/                         # FastAPI REST API + MongoDB Atlas
-│   ├── main.py                      # All async routes, lifespan, CORS
-│   ├── models.py                    # Pydantic v2 schemas
-│   ├── database/
-│   │   ├── connection.py            # Motor client — connect/disconnect
-│   │   └── crud.py                  # All async CRUD operations + seed data
-│   ├── schema_diagram.png           # Week 5 MongoDB ER diagram
-│   ├── requirements.txt             # Python dependencies
-│   ├── .env                         # Local secrets (git-ignored)
-│   ├── .env.example                 # Environment variable template
-│   └── README.md                    # Backend-specific docs + MongoDB setup
-│
-├── W4_APICollection_26100462.json   # Postman collection (Week 4 deliverable)
-└── README.md                        # This file
-```
-
----
-
-## 🗄️ Database Schema (Week 5 — MongoDB Atlas)
-
-![MongoDB Schema Diagram](backend/schema_diagram.png)
-
-Two collections in the `trishul_stayease` database:
-
-```mermaid
-erDiagram
-    PROPERTIES {
-        ObjectId _id PK
-        int id UK
-        string title
-        string location
-        int price
-        string type
-        string status
-    }
-    COUNTERS {
-        string _id PK
-        int seq
-    }
-    COUNTERS ||--o{ PROPERTIES : "provides next id via $inc"
-```
-
-| Collection | Purpose |
-|---|---|
-| `properties` | All eco-stay listings (seeded with 7 on first run) |
-| `counters` | Atomic auto-increment sequence for integer `id` |
-
----
-
-## 🚀 How to Run Locally
+## ⚙️ Setup Instructions
 
 ### Prerequisites
-- **Node.js** v18+ and npm
-- **Python** 3.10+
-- **MongoDB Atlas** account (free M0 cluster)
+- **Node.js** (v18.0 or higher) and **npm**
+- **Python** (v3.10 or higher)
+- **MongoDB Atlas** database URI
+- **Google Gemini API Key** ([Google AI Studio](https://aistudio.google.com/))
+- **Google OAuth Client ID** ([Google Cloud Console](https://console.cloud.google.com/))
 
 ---
 
-### 1️⃣ Clone the repository
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/Riddhi1204/Trishul_StayEase.git
@@ -117,154 +89,248 @@ cd Trishul_StayEase
 
 ---
 
-### 2️⃣ Run the Backend (FastAPI + MongoDB)
+### 2️⃣ Backend Setup (FastAPI + MongoDB)
 
-```bash
-# Navigate to the backend folder
-cd backend
+1. Navigate to the backend folder:
+   ```bash
+   cd backend
+   ```
 
-# Create and activate a virtual environment
-python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # macOS / Linux
+2. Create and activate a Python virtual environment:
+   ```bash
+   # Windows
+   python -m venv venv
+   venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+   # macOS / Linux
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
-# Set up environment variables
-copy .env.example .env         # Windows
-# cp .env.example .env         # macOS / Linux
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Configure environment variables:
+   ```bash
+   # Windows
+   copy .env.example .env
+
+   # macOS / Linux
+   cp .env.example .env
+   ```
+
+5. Fill in your `.env` values:
+   ```env
+   PORT=8000
+   HOST=0.0.0.0
+   ALLOWED_ORIGINS=http://localhost:5173,https://trishul-stay-ease.vercel.app
+   MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
+   DB_NAME=trishul_stayease
+   JWT_SECRET=your-super-secret-key-minimum-32-characters
+   JWT_ALGORITHM=HS256
+   JWT_EXPIRE_MINUTES=10080
+   GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+6. Start the backend server:
+   ```bash
+   uvicorn main:app --reload --port 8000
+   ```
+   - API Running: **http://localhost:8000**
+   - Interactive Docs: **http://localhost:8000/docs**
+
+---
+
+### 3️⃣ Frontend Setup (React + Vite)
+
+1. Open a new terminal and navigate to `frontend`:
+   ```bash
+   cd frontend
+   ```
+
+2. Install npm packages:
+   ```bash
+   npm install
+   ```
+
+3. Create local environment file `.env.local`:
+   ```env
+   VITE_API_URL=http://localhost:8000
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   - Frontend Running: **http://localhost:5173**
+
+---
+
+## 📖 API Documentation
+
+All endpoints return JSON responses. Protected endpoints require the header `Authorization: Bearer <access_token>`.
+
+### Authentication
+
+#### `POST /auth/register`
+- **Request**:
+  ```json
+  {
+    "full_name": "Riddhi Kumari",
+    "email": "user@example.com",
+    "phone": "+919876543210",
+    "password": "Password@123",
+    "role": "guest"
+  }
+  ```
+- **Response (201 Created)**:
+  ```json
+  {
+    "access_token": "eyJhbGciOiJIUzI1Ni...",
+    "user": { "id": "664fa...", "full_name": "Riddhi Kumari", "email": "user@example.com", "role": "guest" }
+  }
+  ```
+
+#### `POST /auth/login`
+- **Request**: `{ "email": "user@example.com", "password": "Password@123" }`
+- **Response (200 OK)**: `{ "access_token": "...", "user": { ... } }`
+
+#### `POST /auth/google`
+- **Request**: `{ "idToken": "google_credential_string", "role": "guest" }`
+- **Response (200 OK)**: `{ "access_token": "...", "user": { ... } }`
+
+---
+
+### Properties
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/properties` | Public | List all properties |
+| `GET` | `/api/properties/{id}` | Public | Get single property details |
+| `GET` | `/api/properties/search?q={query}` | Public | Search properties by title/location |
+| `GET` | `/api/properties/filter?max_price={}&type={}` | Public | Filter properties by price/category |
+| `GET` | `/api/properties/me/all` | Host Only | Get all properties owned by logged-in host |
+| `POST` | `/api/properties` | Host Only | Create a new property |
+| `PUT` | `/api/properties/{id}` | Host Only | Update property details |
+| `DELETE` | `/api/properties/{id}` | Host Only | Delete a property |
+
+---
+
+### Bookings & Wishlist
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/bookings` | Guest Only | Create a booking (`property_id`, `start_date`, `end_date`, `guests`) |
+| `GET` | `/api/bookings/me` | Guest Only | View logged-in guest's bookings |
+| `GET` | `/api/bookings/host` | Host Only | View all reservation requests for host's properties |
+| `PUT` | `/api/bookings/{id}/status` | Host/Guest | Update booking status (`completed`, `cancelled`, `rejected`) |
+| `GET` | `/api/wishlist` | Guest Only | Fetch guest's saved wishlist |
+| `POST` | `/api/wishlist/{property_id}` | Guest Only | Add property to wishlist |
+| `DELETE` | `/api/wishlist/{property_id}` | Guest Only | Remove property from wishlist |
+
+---
+
+### AI Travel Planner
+
+#### `POST /api/ai/travel-plan`
+- **Access**: Authenticated Users
+- **Request**:
+  ```json
+  {
+    "destination": "Rishikesh",
+    "days": 3,
+    "budget": "₹15,000",
+    "travel_style": "Adventure",
+    "guests": 2
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "trip_overview": "A 3-day adventure itinerary in Rishikesh focusing on eco-tourism...",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Riverside Arrival & Ganga Aarti",
+        "activities": ["Check-in at Eco Homestay", "Sunset meditation at Parmarth Niketan"],
+        "eco_tips": "Carry a reusable bottle and support local vendors."
+      }
+    ],
+    "budget_breakdown": {
+      "accommodation": "₹6,000",
+      "activities": "₹5,000",
+      "food_and_transport": "₹4,000"
+    }
+  }
+  ```
+
+---
+
+## 🏗️ Architecture & Folder Structure
+
+Trishul StayEase follows a decoupled client-server architecture with an asynchronous, modular design pattern:
+
+```
+Trishul_StayEase/
+│
+├── frontend/                        # React 19 + Vite Frontend SPA
+│   ├── public/                      # Static branding, manifest, icons, favicons
+│   ├── src/
+│   │   ├── components/              # Navbar, Hero, Card, Footer, Modals, ErrorBoundary
+│   │   ├── components/ui/           # Reusable UI library (Toast, Button, Input)
+│   │   ├── contexts/                # AuthContext (JWT/OAuth), ThemeContext (Dark mode)
+│   │   ├── pages/                   # Home, Explore, Dashboard, AI Planner, Bookings, Wishlist
+│   │   ├── services/
+│   │   │   └── api.js               # Centralized Axios client & response interceptors
+│   │   ├── App.jsx                  # Protected routes & client-side router
+│   │   ├── main.jsx                 # ErrorBoundary & React DOM root
+│   │   └── index.css                # Global CSS variables & responsive design tokens
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/                         # FastAPI Asynchronous REST API
+│   ├── ai/                          # Gemini AI travel planner service, prompts, schemas
+│   ├── auth/                        # JWT authentication, Bcrypt hashing, Google OAuth service
+│   ├── database/                    # Motor async client connection, indexes, CRUD operations
+│   ├── middleware/                  # Custom security headers & CORS middleware
+│   ├── routers/                     # Bookings, Wishlists, Host Dashboard, Messaging, Contact
+│   ├── security/                    # SlowAPI rate limiting configuration
+│   ├── models.py                    # Pydantic v2 schemas and validation models
+│   ├── main.py                      # FastAPI app instance, lifespans, route aggregation
+│   └── requirements.txt             # Backend dependencies
+│
+├── W4_APICollection_26100462.json   # Postman Collection
+├── render.yaml                      # Render Blueprint deployment config
+└── README.md                        # Master documentation
 ```
 
-Edit `.env` and fill in your MongoDB Atlas connection string:
+---
 
-```env
-PORT=8000
-HOST=0.0.0.0
-ALLOWED_ORIGINS=http://localhost:5173,https://trishul-stay-ease.vercel.app
-MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority
-DB_NAME=trishul_stayease
-```
+## ⚠️ Known Limitations
 
-```bash
-# Start the server
-uvicorn main:app --reload --port 8000
-```
-
-> On first startup, the server automatically connects to Atlas, creates indexes, and seeds 7 eco-stay properties if the collection is empty.
-
-✅ Backend: **http://localhost:8000**
-📖 Swagger docs: **http://localhost:8000/docs**
+1. **Render Free-Tier Cold Starts**: The backend is hosted on Render's free tier, which spins down web services after 15 minutes of inactivity. The initial request after an idle period may take 30–60 seconds to respond while the server container boots up.
+2. **MongoDB Atlas M0 Cluster Constraints**: Hosted on a shared M0 cluster with a 512MB storage quota and a 500 connection limit.
+3. **Simulated Payment Gateway**: The current booking flow records reservations directly with calculated nightly totals. Real payment gateway integration (Razorpay / Stripe) is planned for the next release.
+4. **Google Gemini Free Tier Rate Limits**: The AI Travel Planner is subject to standard free-tier RPM (requests per minute) quotas.
 
 ---
 
-### 3️⃣ Run the Frontend (React + Vite)
+## 🤝 Credits & Acknowledgements
 
-Open a **new terminal**:
-
-```bash
-cd frontend
-npm install
-echo VITE_API_URL=http://localhost:8000 > .env.local
-npm run dev
-```
-
-✅ Frontend: **http://localhost:5173**
-
----
-
-## 6. Security and Authentication (Week 6)
-
-### Authentication Flow
-- **JWT (JSON Web Tokens)**: Used for stateless session management.
-  - Access tokens are signed using a secure secret key and expire in 24 hours.
-  - The client stores the token in `localStorage` and sends it via the `Authorization: Bearer <token>` header.
-- **Google OAuth**: Integrated using `@react-oauth/google` and `google-auth` on the backend for secure Google Sign-In.
-- **Password Security**: Passwords are cryptographically hashed using `bcrypt` (via `passlib`).
-  - Frontend includes a **password strength meter** requiring: 8+ characters, uppercase, lowercase, numbers, and special characters.
-
-### Security Enhancements
-- **Rate Limiting**: Implemented via `slowapi` on critical endpoints (`/auth/login`, `/auth/register`) to prevent brute-force and DDoS attacks.
-- **Security Headers**: Custom middleware (`middleware/security.py`) implements security headers like `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, and restrictive `Content-Security-Policy`.
-- **CORS Configuration**: Restricted allowed origins in production for better cross-origin security.
-- **Data Sanitization & Limits**: Applied constraints to search queries (`max_length=100`) to prevent excessive load on database querying.
-
-## 🌍 Production Deployment
-
-### 1. Deploy the Backend to Render
-1. Create a **Web Service** on Render and point it to your GitHub repository.
-2. Set the `Root Directory` to `backend`.
-3. Render will automatically detect the settings from `render.yaml`.
-4. In the Render Dashboard, add the following Environment Variables:
-   - `MONGO_URI`: Your MongoDB Atlas connection string.
-   - `JWT_SECRET`: A secure randomly generated string.
-   - `ALLOWED_ORIGINS`: `https://trishul-stay-ease.vercel.app` (or your frontend URL)
-
-### 2. Deploy the Frontend to Vercel
-1. Import your repository into Vercel.
-2. Set the **Framework Preset** to `Vite`.
-3. Set the **Root Directory** to `frontend`.
-4. In the **Environment Variables** section, add:
-   - Name: `VITE_API_URL`
-   - Value: `https://your-backend-app-name.onrender.com` (Your live Render backend URL)
-5. Click **Deploy**. Vercel will automatically connect to your Render backend via this variable.
-
----
-
-## 🔌 API Endpoints
-
-Base URL: `http://localhost:8000`
-
-| Method | Endpoint | Description | Status Code |
-|--------|----------|-------------|-------------|
-| GET | `/api/properties` | List all properties | 200 |
-| GET | `/api/properties/{id}` | Get a single property | 200 / 404 |
-| POST | `/api/properties` | Create a new property | 201 |
-| PUT | `/api/properties/{id}` | Update a property | 200 / 404 |
-| DELETE | `/api/properties/{id}` | Delete a property | 204 / 404 |
-| GET | `/api/properties/search?q=` | Search by title or location | 200 |
-| GET | `/api/properties/filter?max_price=` | Filter by price / type / status | 200 |
-
----
-
-## 🌿 Features
-
-- **MongoDB Atlas** persistent storage — data survives server restarts
-- **Eco-stay listings** fetched live from FastAPI + Atlas backend
-- **Search** properties by name or location (debounced API calls)
-- **Filter** by price, type, and availability
-- **Dark mode** with system preference detection and localStorage persistence
-- **Reusable UI library** — Button, Input, Modal, Toast, Loader components
-- **Skeleton loading** states while fetching data
-- **Error handling** with retry support
-- **CORS** configured for local dev and Vercel production
-- **Auto-seeding** — 7 properties inserted on first run automatically
-
----
-
-## 📬 Postman Collection
-
-Import `W4_APICollection_26100462.json` into Postman to test all endpoints with pre-filled example requests and responses.
-
----
-
-## 🎓 Internship Project
-
-**Track:** Full Stack Development Internship
-**Sector:** Homestay & Eco-Tourism
-**Project:** WD-05 – Direct Booking Engine (Zero Commission MVP)
+- **Google DeepMind / Google Gemini API** for powering the AI Eco Travel Planner.
+- **FastAPI & Motor (Async Python)** for asynchronous backend performance.
+- **React & Vite Teams** for the frontend developer experience.
+- **Unsplash** for high-resolution eco-tourism and nature imagery.
+- **Antigravity AI** for pair-programming and technical orchestration.
 
 ---
 
 ## 👩‍💻 Author
 
 **Riddhi Kumari**
-
-- 🔗 LinkedIn: [linkedin.com/in/riddhi-kumari-039974383](https://www.linkedin.com/in/riddhi-kumari-039974383/)
-- 🐙 GitHub: [github.com/Riddhi1204](https://github.com/Riddhi1204)
-
----
-
-## 📄 License
-
-This project is developed for educational and internship purposes.
+- 🔗 **LinkedIn**: [linkedin.com/in/riddhi-kumari-039974383](https://www.linkedin.com/in/riddhi-kumari-039974383/)
+- 🐙 **GitHub**: [github.com/Riddhi1204](https://github.com/Riddhi1204)
