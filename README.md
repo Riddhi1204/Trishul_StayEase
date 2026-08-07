@@ -15,11 +15,11 @@
 
 | 1. Explore & Sustainable Stays | 2. AI Eco Travel Planner |
 | :---: | :---: |
-| ![Explore Stays](https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=60) <br> *Browse, filter, and search eco-certified homestays* | ![AI Planner](https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=60) <br> *Generate personalized sustainable itineraries with Gemini AI* |
+| ![Explore Stays](docs/screenshots/explore_stays.jpg) <br> *Browse, filter, and search eco-certified homestays across India* | ![AI Travel Planner](docs/screenshots/ai_planner.jpg) <br> *Generate personalized sustainable itineraries with Google Gemini 1.5 Flash* |
 
-| 3. Host Analytics Dashboard | 4. Interactive Booking Modal |
+| 3. Host Analytics Dashboard | 4. Real-time Guest Bookings |
 | :---: | :---: |
-| ![Host Dashboard](https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=60) <br> *Real-time metrics: revenue, bookings, and occupancy* | ![Booking Flow](https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&auto=format&fit=crop&q=60) <br> *Instant dynamic price calculation and date validation* |
+| ![Host Dashboard](docs/screenshots/host_dashboard.jpg) <br> *Live host analytics: property counts, revenue, and occupancy metrics* | ![My Bookings](docs/screenshots/my_bookings.jpg) <br> *Active booking management, date validation, and status tracking* |
 
 ---
 
