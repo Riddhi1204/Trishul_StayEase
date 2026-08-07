@@ -11,12 +11,6 @@
 
 ---
 
-## 🎥 Demo Video
-
-- **Video Walkthrough (YouTube Unlisted):** `[Link will be updated after recording]`
-
----
-
 ## 📸 Screenshots
 
 | 1. Explore & Sustainable Stays | 2. AI Eco Travel Planner |
